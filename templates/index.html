@@ -430,7 +430,7 @@
                 serviceDescription(service);
 
             card.querySelector(".open-service").addEventListener("click", () => {
-                askAiAboutService(service);
+                askAboutExactService(service);
             });
 
             servicesList.appendChild(card);
@@ -503,17 +503,6 @@
     });
 
 
-    async function askAiAboutService(service) {
-        openAi();
-
-        aiInput.value =
-            "Расскажи подробнее об услуге: " +
-            (service.name || "");
-
-        await sendMessage();
-    }
-
-
     function addMessage(type, text) {
         const item = document.createElement("div");
         item.className = "message " + type;
@@ -551,6 +540,68 @@
         document.getElementById("typingMessage")?.remove();
     }
 
+
+
+    async function askAboutExactService(service) {
+        if (!service || !service.id || sendAi.disabled) {
+            return;
+        }
+
+        aiPanel.classList.add("open");
+
+        const question =
+            "Объясни простыми словами эту услугу: " +
+            (service.name || "");
+
+        addMessage("user", question);
+        sendAi.disabled = true;
+        addTyping();
+
+        try {
+            const response = await fetch(
+                "/api/chat/service/" +
+                encodeURIComponent(service.id),
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        message: question
+                    })
+                }
+            );
+
+            const data = await response.json();
+
+            removeTyping();
+
+            if (!response.ok) {
+                throw new Error(
+                    data.details ||
+                    data.error ||
+                    "Ошибка сервера"
+                );
+            }
+
+            addMessage(
+                "assistant",
+                data.answer || "Ответ не получен."
+            );
+        } catch (error) {
+            console.error("Ошибка ИИ услуги:", error);
+            removeTyping();
+
+            addMessage(
+                "assistant",
+                "Не удалось получить ответ от ИИ: " +
+                error.message
+            );
+        } finally {
+            sendAi.disabled = false;
+            aiInput.focus();
+        }
+    }
 
     async function sendMessage() {
         const text = aiInput.value.trim();
@@ -617,9 +668,12 @@
 
 
     document.querySelectorAll(".ai-suggestions button").forEach((button) => {
-        button.addEventListener("click", () => {
-            aiInput.value = button.dataset.question || button.textContent.trim();
-            aiInput.focus();
+        button.addEventListener("click", async () => {
+            aiInput.value =
+                button.dataset.question ||
+                button.textContent.trim();
+
+            await sendMessage();
         });
     });
 
