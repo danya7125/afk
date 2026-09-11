@@ -1,37 +1,58 @@
-# МФЦ Flask — готовый запуск
+# МФЦ Flask + PostgreSQL + GigaChat
 
-В этой папке уже лежит:
-- app.py
-- requirements.txt
-- templates/index.html
-- static/style.css
-- data/mfc_data.db
+## 1. Установка
 
-База `mfc_data.db` подключена к Flask напрямую через стандартный sqlite3.
-В ней находятся 732 услуги, 4 группы классификации, 190 категорий
-и 83716 связей классификации.
+python -m pip install -r requirements.txt
 
-## Запуск Windows
+## 2. PostgreSQL
 
-В терминале VS Code в этой папке:
+Нужно создать базу:
 
-    python -m pip install -r requirements.txt
-    python app.py
+CREATE DATABASE mfc_data;
 
-Затем открыть:
+Затем восстановить командный dump:
 
-    http://127.0.0.1:5000
+PowerShell:
+& "C:\Program Files\PostgreSQL\18\bin\pg_restore.exe" -U postgres -h 127.0.0.1 -p 5432 -d mfc_data mfc_data.dump
 
-Ничего отдельно импортировать в БД не нужно.
+Если PostgreSQL установлен в другой папке, используйте путь к своему pg_restore.exe.
 
-## Что уже работает
-- сайт Flask;
-- каталог услуг из реальной БД;
-- поиск по услугам;
-- раздел категорий;
-- запрос к `/api/chat` с поиском по базе;
-- три темы;
-- мобильное меню.
+## 3. .env
 
-## Следующий шаг
-Заменить демонстрационную логику `/api/chat` на настоящий AI API.
+Создайте в корне проекта файл `.env`:
+
+PG_HOST=127.0.0.1
+PG_PORT=5432
+PG_DATABASE=mfc_data
+PG_USER=postgres
+PG_PASSWORD=ваш_пароль
+
+GIGACHAT_CREDENTIALS=ваш_authorization_key
+GIGACHAT_SCOPE=GIGACHAT_API_PERS
+
+Не добавляйте `.env` в GitHub.
+
+## 4. Запуск
+
+python app.py
+
+Если PostgreSQL подключился, в терминале появится:
+PostgreSQL: подключение успешно
+
+После этого:
+http://127.0.0.1:5000
+
+## Что изменилось
+
+SQLite больше не используется.
+Flask напрямую подключается к PostgreSQL.
+Поиск услуг и категорий идёт из PostgreSQL.
+GigaChat получает найденные данные из PostgreSQL и формирует ответ.
+
+Для другого участника:
+1. git clone
+2. pip install -r requirements.txt
+3. создать PostgreSQL database mfc_data
+4. pg_restore mfc_data.dump
+5. создать свой .env
+6. python app.py
