@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body data-theme="blue">
-<div class="shell">
+<div class="app">
     <aside class="sidebar" id="sidebar">
         <div class="brand">
             <div class="brand-mark">МФЦ</div>
@@ -17,22 +17,18 @@
             </div>
         </div>
 
-        <button class="sidebar-action" id="newChatBtn">Новый диалог</button>
+        <button class="side-main active" data-page="assistant">Помощник</button>
+        <button class="side-main" data-page="services">Услуги</button>
+        <button class="side-main" data-page="categories">Категории</button>
+        <button class="side-main" data-page="info">Информация</button>
 
-        <nav class="nav">
-            <button class="nav-link active" data-page="assistant">Помощник</button>
-            <button class="nav-link" data-page="services">Услуги</button>
-            <button class="nav-link" data-page="info">Информация</button>
-        </nav>
-
-        <div class="recent">
-            <div class="nav-label">Последние запросы</div>
-            <button class="recent-item" data-question="Как заменить паспорт?">Как заменить паспорт?</button>
-            <button class="recent-item" data-question="Как записаться на приём?">Как записаться на приём?</button>
+        <div class="side-stats">
+            <div><span>Услуги</span><strong>{{ services_count }}</strong></div>
+            <div><span>Категории</span><strong>{{ categories_count }}</strong></div>
         </div>
 
         <div class="sidebar-bottom">
-            <button class="settings-link" id="settingsBtn">Настройки</button>
+            <button class="settings-button" id="settingsButton">Настройки</button>
         </div>
     </aside>
 
@@ -40,46 +36,43 @@
         <header class="header">
             <button class="mobile-menu" id="mobileMenu">Меню</button>
             <div class="header-title" id="pageTitle">Помощник</div>
-            <div class="header-right">
-                <span class="online">Система готова</span>
-                <button class="plain-button" id="clearBtn">Очистить</button>
+            <div class="header-actions">
+                <span class="status">Данные БД загружены</span>
+                <button class="outline-btn" id="clearBtn">Очистить</button>
             </div>
         </header>
 
-        <section class="main-content">
-            <div class="page page-active" id="page-assistant">
-                <div class="intro">
-                    <div class="intro-line"></div>
+        <section class="content">
+            <div class="page active" id="page-assistant">
+                <div class="hero">
                     <p class="eyebrow">ЦИФРОВОЙ ПОМОЩНИК МФЦ</p>
-                    <h1>Какой вопрос<br>вас интересует?</h1>
-                    <p class="intro-copy">
-                        Получите информацию об услугах, документах и порядке обращения.
+                    <h1>Что необходимо<br>узнать?</h1>
+                    <p class="hero-text">
+                        Поиск по каталогу услуг. Сейчас система использует подключённую базу МФЦ.
+                        Реальный ИИ подключается отдельным модулем.
                     </p>
                 </div>
 
                 <div class="quick-grid">
-                    <button class="quick-card" data-question="Как заменить паспорт?">
-                        <span class="quick-label">ДОКУМЕНТЫ</span>
-                        <strong>Замена паспорта</strong>
-                        <small>Документы и порядок обращения</small>
+                    <button data-question="паспорт" class="quick-card">
+                        <small>ДОКУМЕНТЫ</small>
+                        <strong>Паспорт</strong>
+                        <span>Поиск услуг, связанных с паспортом</span>
                     </button>
-
-                    <button class="quick-card" data-question="Как записаться на приём?">
-                        <span class="quick-label">ЗАПИСЬ</span>
-                        <strong>Предварительная запись</strong>
-                        <small>Как записаться на приём</small>
+                    <button data-question="регистрация" class="quick-card">
+                        <small>РЕГИСТРАЦИЯ</small>
+                        <strong>Регистрация</strong>
+                        <span>Услуги регистрации и места жительства</span>
                     </button>
-
-                    <button class="quick-card" data-question="Где находится отделение МФЦ?">
-                        <span class="quick-label">ОТДЕЛЕНИЯ</span>
-                        <strong>Адреса и график</strong>
-                        <small>Информация об отделениях</small>
+                    <button data-question="налог" class="quick-card">
+                        <small>НАЛОГИ</small>
+                        <strong>Налоговые услуги</strong>
+                        <span>Поиск налоговых услуг в базе</span>
                     </button>
-
-                    <button class="quick-card" data-question="Какие услуги доступны в МФЦ?">
-                        <span class="quick-label">УСЛУГИ</span>
-                        <strong>Каталог услуг</strong>
-                        <small>Основные направления работы</small>
+                    <button data-question="пенсион" class="quick-card">
+                        <small>СОЦИАЛЬНЫЕ ВОПРОСЫ</small>
+                        <strong>Пенсии и пособия</strong>
+                        <span>Поиск социальных услуг</span>
                     </button>
                 </div>
 
@@ -87,242 +80,247 @@
             </div>
 
             <div class="page" id="page-services">
-                <div class="section-head">
+                <div class="page-head">
                     <p class="eyebrow">КАТАЛОГ</p>
                     <h2>Услуги МФЦ</h2>
-                    <p>Базовый каталог уже загружается из локальной базы данных.</p>
+                    <p>Данные загружаются из подключённой базы.</p>
+                    <input id="serviceSearch" class="search-input" placeholder="Поиск услуги по названию">
                 </div>
-                <div class="service-list">
-                    {% for service in services %}
-                    <button class="service-row" data-question="{{ service.name }}">
-                        <div>
-                            <strong>{{ service.name }}</strong>
-                            <span>{{ service.description }}</span>
-                        </div>
-                        <small>{{ service.category }}</small>
-                    </button>
-                    {% endfor %}
+                <div class="service-list" id="serviceList"></div>
+            </div>
+
+            <div class="page" id="page-categories">
+                <div class="page-head">
+                    <p class="eyebrow">КЛАССИФИКАЦИЯ</p>
+                    <h2>Категории</h2>
+                    <p>Группы и категории загружаются из базы классификации.</p>
                 </div>
+                <div id="categoryList" class="category-list"></div>
             </div>
 
             <div class="page" id="page-info">
-                <div class="section-head">
-                    <p class="eyebrow">СПРАВОЧНАЯ ИНФОРМАЦИЯ</p>
-                    <h2>Информация</h2>
+                <div class="page-head">
+                    <p class="eyebrow">ИНФОРМАЦИЯ</p>
+                    <h2>О проекте</h2>
                     <p>
-                        В этом разделе позже можно подключить реальные адреса отделений,
-                        график работы, контакты и правила оказания услуг.
+                        Это рабочий Flask-прототип. База данных уже содержит услуги,
+                        классификацию и связанные служебные данные.
                     </p>
-                </div>
-                <div class="info-table">
-                    <div><span>Адреса отделений</span><strong>Подключаются на следующем этапе</strong></div>
-                    <div><span>График работы</span><strong>Подключается на следующем этапе</strong></div>
-                    <div><span>Телефон</span><strong>Подключается на следующем этапе</strong></div>
                 </div>
             </div>
         </section>
 
         <footer class="composer-wrap">
             <div class="composer">
-                <button class="voice-button" id="voiceBtn">Голос</button>
-                <input id="messageInput" placeholder="Введите вопрос..." autocomplete="off">
-                <button class="send-button" id="sendBtn">Отправить</button>
+                <button class="voice-btn" id="voiceButton">Голос</button>
+                <input id="messageInput" placeholder="Введите вопрос по услугам МФЦ...">
+                <button class="send-btn" id="sendButton">Отправить</button>
             </div>
-            <div class="composer-note">Ответы ИИ будут подключены после интеграции API.</div>
+            <div class="composer-note">ИИ и голосовой модуль подключаются поверх этого API.</div>
         </footer>
     </main>
 </div>
 
-<div class="modal" id="settingsModal" aria-hidden="true">
+<div class="modal" id="settingsModal">
     <div class="modal-box">
         <div class="modal-head">
             <div>
                 <p class="eyebrow">НАСТРОЙКИ</p>
-                <h2>Внешний вид</h2>
+                <h2>Тема оформления</h2>
             </div>
-            <button class="close" id="closeSettings">Закрыть</button>
+            <button class="outline-btn" id="closeSettings">Закрыть</button>
         </div>
 
-        <div class="theme-choice">
-            <button class="theme-card selected" data-theme-value="blue">
-                <span class="theme-preview preview-blue"></span>
-                <strong>Синяя</strong>
-                <small>Основная тема проекта</small>
-            </button>
-
-            <button class="theme-card" data-theme-value="light">
-                <span class="theme-preview preview-light"></span>
-                <strong>Белая</strong>
-                <small>Светлая и нейтральная</small>
-            </button>
-
-            <button class="theme-card" data-theme-value="dark">
-                <span class="theme-preview preview-dark"></span>
-                <strong>Тёмная</strong>
-                <small>Для работы вечером</small>
-            </button>
-        </div>
-
-        <div class="modal-footer">
-            <button class="plain-button" id="resetTheme">Сбросить</button>
-            <button class="send-button" id="saveTheme">Сохранить</button>
+        <div class="themes">
+            <button class="theme-card" data-theme="blue"><span class="theme-swatch blue"></span><strong>Синяя</strong></button>
+            <button class="theme-card" data-theme="white"><span class="theme-swatch white"></span><strong>Белая</strong></button>
+            <button class="theme-card" data-theme="dark"><span class="theme-swatch dark"></span><strong>Тёмная</strong></button>
         </div>
     </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div id="toast" class="toast"></div>
 
 <script>
-const body = document.body;
-const modal = document.getElementById("settingsModal");
-const toast = document.getElementById("toast");
-const chat = document.getElementById("chat");
-const input = document.getElementById("messageInput");
-const suggestions = document.querySelectorAll("[data-question]");
-const navLinks = document.querySelectorAll(".nav-link");
 const pages = {
     assistant: document.getElementById("page-assistant"),
     services: document.getElementById("page-services"),
+    categories: document.getElementById("page-categories"),
     info: document.getElementById("page-info")
 };
 
-function toastMessage(message) {
-    toast.textContent = message;
+const pageTitles = {
+    assistant: "Помощник",
+    services: "Услуги",
+    categories: "Категории",
+    info: "Информация"
+};
+
+const toast = document.getElementById("toast");
+const chat = document.getElementById("chat");
+const input = document.getElementById("messageInput");
+
+function notify(text) {
+    toast.textContent = text;
     toast.classList.add("show");
     clearTimeout(window.toastTimer);
-    window.toastTimer = setTimeout(() => toast.classList.remove("show"), 2000);
+    window.toastTimer = setTimeout(() => toast.classList.remove("show"), 1800);
 }
 
-function selectPage(page) {
-    Object.entries(pages).forEach(([key, element]) => {
-        element.classList.toggle("page-active", key === page);
+function openPage(name) {
+    Object.entries(pages).forEach(([key, page]) => page.classList.toggle("active", key === name));
+    document.querySelectorAll(".side-main").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.page === name);
     });
-
-    navLinks.forEach(link => {
-        link.classList.toggle("active", link.dataset.page === page);
-    });
-
-    const titles = { assistant: "Помощник", services: "Услуги", info: "Информация" };
-    document.getElementById("pageTitle").textContent = titles[page];
+    document.getElementById("pageTitle").textContent = pageTitles[name];
     document.getElementById("sidebar").classList.remove("open");
+
+    if (name === "services") loadServices();
+    if (name === "categories") loadCategories();
 }
 
-navLinks.forEach(link => {
-    link.addEventListener("click", () => selectPage(link.dataset.page));
+document.querySelectorAll(".side-main").forEach(btn => {
+    btn.addEventListener("click", () => openPage(btn.dataset.page));
 });
 
-suggestions.forEach(element => {
-    element.addEventListener("click", () => {
-        const question = element.dataset.question;
-        selectPage("assistant");
-        input.value = question;
+document.querySelectorAll(".quick-card").forEach(btn => {
+    btn.addEventListener("click", () => {
+        input.value = btn.dataset.question;
         input.focus();
     });
-});
-
-document.getElementById("sendBtn").addEventListener("click", sendMessage);
-input.addEventListener("keydown", event => {
-    if (event.key === "Enter") {
-        event.preventDefault();
-        sendMessage();
-    }
 });
 
 async function sendMessage() {
     const text = input.value.trim();
     if (!text) {
-        toastMessage("Введите вопрос");
+        notify("Введите вопрос");
         return;
     }
 
     const user = document.createElement("div");
-    user.className = "message user-message";
-    user.innerHTML = `<span>ВЫ</span><p></p>`;
+    user.className = "message user";
+    user.innerHTML = "<span>ВЫ</span><p></p>";
     user.querySelector("p").textContent = text;
     chat.appendChild(user);
 
     input.value = "";
 
-    try {
-        const response = await fetch("/api/chat", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({message: text})
-        });
-
-        const data = await response.json();
-
-        const assistant = document.createElement("div");
-        assistant.className = "message assistant-message";
-        assistant.innerHTML = `<span>ПОМОЩНИК</span><p></p>`;
-        assistant.querySelector("p").textContent = data.answer || "Не удалось получить ответ.";
-        chat.appendChild(assistant);
-
-        chat.lastElementChild.scrollIntoView({behavior: "smooth", block: "nearest"});
-    } catch (error) {
-        toastMessage("Не удалось связаться с сервером");
-    }
-}
-
-document.getElementById("newChatBtn").addEventListener("click", async () => {
-    await fetch("/api/reset", {method: "POST"});
-    chat.innerHTML = "";
-    input.value = "";
-    selectPage("assistant");
-    toastMessage("Новый диалог создан");
-});
-
-document.getElementById("clearBtn").addEventListener("click", async () => {
-    await fetch("/api/reset", {method: "POST"});
-    chat.innerHTML = "";
-    toastMessage("Диалог очищен");
-});
-
-document.getElementById("voiceBtn").addEventListener("click", () => {
-    toastMessage("Голосовой модуль подключим следующим этапом");
-});
-
-document.getElementById("settingsBtn").addEventListener("click", () => {
-    modal.classList.add("open");
-    modal.setAttribute("aria-hidden", "false");
-});
-
-document.getElementById("closeSettings").addEventListener("click", closeModal);
-modal.addEventListener("click", event => {
-    if (event.target === modal) closeModal();
-});
-
-function closeModal() {
-    modal.classList.remove("open");
-    modal.setAttribute("aria-hidden", "true");
-}
-
-const themeCards = document.querySelectorAll(".theme-card");
-
-function setTheme(theme) {
-    body.dataset.theme = theme;
-    localStorage.setItem("mfc-theme", theme);
-    themeCards.forEach(card => {
-        card.classList.toggle("selected", card.dataset.themeValue === theme);
+    const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({message: text})
     });
+
+    const data = await response.json();
+
+    const assistant = document.createElement("div");
+    assistant.className = "message assistant";
+    assistant.innerHTML = "<span>ПОМОЩНИК</span><p></p>";
+    assistant.querySelector("p").textContent = data.answer || "Нет ответа";
+    chat.appendChild(assistant);
+    assistant.scrollIntoView({behavior: "smooth", block: "nearest"});
 }
 
-themeCards.forEach(card => {
-    card.addEventListener("click", () => setTheme(card.dataset.themeValue));
+document.getElementById("sendButton").addEventListener("click", sendMessage);
+input.addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+        e.preventDefault();
+        sendMessage();
+    }
 });
 
-document.getElementById("saveTheme").addEventListener("click", () => {
-    closeModal();
-    toastMessage("Тема сохранена");
+document.getElementById("voiceButton").addEventListener("click", () => {
+    notify("Голос будет подключён отдельным модулем");
 });
 
-document.getElementById("resetTheme").addEventListener("click", () => {
-    setTheme("blue");
-    toastMessage("Тема сброшена");
+document.getElementById("clearBtn").addEventListener("click", () => {
+    chat.innerHTML = "";
+    notify("Диалог очищен");
 });
 
 document.getElementById("mobileMenu").addEventListener("click", () => {
     document.getElementById("sidebar").classList.toggle("open");
+});
+
+async function loadServices(query = "") {
+    const list = document.getElementById("serviceList");
+    const response = await fetch("/api/services?q=" + encodeURIComponent(query) + "&limit=100");
+    const services = await response.json();
+    list.innerHTML = "";
+
+    services.forEach(service => {
+        const item = document.createElement("button");
+        item.className = "service-item";
+        item.innerHTML = `<div><strong></strong><span></span></div><small>ОТКРЫТЬ</small>`;
+        item.querySelector("strong").textContent = service.name;
+        item.querySelector("span").textContent = service.documents || "Информация об услуге";
+        item.addEventListener("click", () => {
+            input.value = service.name;
+            openPage("assistant");
+            input.focus();
+        });
+        list.appendChild(item);
+    });
+}
+
+document.getElementById("serviceSearch").addEventListener("input", e => loadServices(e.target.value));
+
+async function loadCategories() {
+    const target = document.getElementById("categoryList");
+    const response = await fetch("/api/categories");
+    const groups = await response.json();
+    target.innerHTML = "";
+
+    groups.forEach(group => {
+        const box = document.createElement("div");
+        box.className = "category-group";
+
+        const head = document.createElement("button");
+        head.className = "category-head";
+        head.textContent = group.name;
+        box.appendChild(head);
+
+        const body = document.createElement("div");
+        body.className = "category-body";
+
+        group.categories.forEach(category => {
+            const item = document.createElement("button");
+            item.textContent = category.name;
+            item.addEventListener("click", () => {
+                input.value = category.name;
+                openPage("assistant");
+                input.focus();
+            });
+            body.appendChild(item);
+        });
+
+        head.addEventListener("click", () => body.classList.toggle("open"));
+        box.appendChild(body);
+        target.appendChild(box);
+    });
+}
+
+const modal = document.getElementById("settingsModal");
+document.getElementById("settingsButton").addEventListener("click", () => modal.classList.add("open"));
+document.getElementById("closeSettings").addEventListener("click", () => modal.classList.remove("open"));
+modal.addEventListener("click", e => {
+    if (e.target === modal) modal.classList.remove("open");
+});
+
+function setTheme(theme) {
+    document.body.dataset.theme = theme;
+    localStorage.setItem("mfc-theme", theme);
+    document.querySelectorAll(".theme-card").forEach(btn => {
+        btn.classList.toggle("selected", btn.dataset.theme === theme);
+    });
+}
+
+document.querySelectorAll(".theme-card").forEach(btn => {
+    btn.addEventListener("click", () => {
+        setTheme(btn.dataset.theme);
+        modal.classList.remove("open");
+        notify("Тема изменена");
+    });
 });
 
 setTheme(localStorage.getItem("mfc-theme") || "blue");
