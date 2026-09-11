@@ -1163,3 +1163,155 @@ body.light-theme .reset-filters:hover {
 body.light-theme .filter-hint {
     color: #7892a8;
 }
+
+/* Service details: read directly from PostgreSQL, no AI involved. */
+.modal-open {
+    overflow: hidden;
+}
+
+.service-modal[hidden] {
+    display: none;
+}
+
+.service-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.service-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: rgba(0, 8, 18, .72);
+    backdrop-filter: blur(5px);
+    cursor: default;
+}
+
+.service-modal-card {
+    position: relative;
+    z-index: 1;
+    width: min(880px, 100%);
+    max-height: min(820px, calc(100vh - 48px));
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--surface);
+    box-shadow: 0 25px 80px rgba(0, 0, 0, .45);
+}
+
+.service-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 24px 26px 18px;
+    border-bottom: 1px solid var(--border);
+}
+
+.service-modal-label {
+    display: inline-block;
+    margin-bottom: 7px;
+    color: var(--blue-light);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+}
+
+.service-modal-header h2 {
+    margin: 0;
+    font-size: 21px;
+    line-height: 1.35;
+}
+
+.service-modal-close {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--surface-2);
+    color: var(--text);
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.service-modal-content {
+    overflow-y: auto;
+    padding: 22px 26px 28px;
+}
+
+.service-detail-section + .service-detail-section {
+    margin-top: 22px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(100, 150, 190, .14);
+}
+
+.service-detail-section h3 {
+    margin: 0 0 8px;
+    color: var(--text);
+    font-size: 14px;
+}
+
+.service-detail-section p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.65;
+    white-space: pre-line;
+}
+
+@media (max-width: 700px) {
+    .service-modal {
+        padding: 10px;
+    }
+
+    .service-modal-card {
+        max-height: calc(100vh - 20px);
+    }
+
+    .service-modal-header,
+    .service-modal-content {
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+}
+
+.message-sources {
+    margin-top: 7px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    color: var(--muted);
+    font-size: 9px;
+}
+
+.message-sources button {
+    max-width: 240px;
+    padding: 5px 7px;
+    overflow: hidden;
+    border: 1px solid rgba(44, 145, 255, .35);
+    border-radius: 7px;
+    background: rgba(8, 124, 255, .08);
+    color: var(--blue-light);
+    font-size: 9px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.message-sources button:hover {
+    border-color: rgba(44, 145, 255, .7);
+    background: rgba(8, 124, 255, .14);
+}

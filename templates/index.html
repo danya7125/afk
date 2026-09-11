@@ -99,7 +99,7 @@
                         <path d="M12 3v3"></path>
                     </svg>
                 </span>
-                <span>ИИ-агент</span>
+                <span>ИИ-помощник</span>
                 <span class="new-label">Новое</span>
             </a>
 
@@ -116,11 +116,11 @@
 
         <button class="ai-card" id="aiCardButton" type="button">
             <span class="ai-card-image">
-                <img src="{{ url_for('static', filename='images/ai-bot.png') }}" alt="ИИ-агент">
+                <img src="{{ url_for('static', filename='images/ai-bot.png') }}" alt="ИИ-помощник">
             </span>
 
             <span class="ai-card-content">
-                <strong>ИИ-агент</strong>
+                <strong>ИИ-помощник</strong>
                 <span>Ваш умный помощник</span>
             </span>
 
@@ -235,7 +235,7 @@
             </button>
 
             <div>
-                <h2>ИИ-агент</h2>
+                <h2>ИИ-помощник</h2>
                 <p>Помощник по государственным услугам</p>
             </div>
         </div>
@@ -244,10 +244,10 @@
 
             <div class="ai-welcome">
                 <div class="ai-large-image">
-                    <img src="{{ url_for('static', filename='images/ai-bot.png') }}" alt="ИИ-агент">
+                    <img src="{{ url_for('static', filename='images/ai-bot.png') }}" alt="ИИ-помощник">
                 </div>
 
-                <h3>ИИ-агент МФЦ</h3>
+                <h3>ИИ-помощник МФЦ</h3>
 
                 <p>
                     Найду подходящую услугу и помогу разобраться
@@ -290,433 +290,22 @@
 </div>
 
 
-<script>
-    const body = document.body;
 
-    const servicesList = document.getElementById("servicesList");
-    const serviceSearch = document.getElementById("serviceSearch");
-    const globalSearch = document.getElementById("globalSearch");
-    const emptyView = document.getElementById("emptyView");
-
-    const aiPanel = document.getElementById("aiPanel");
-    const aiInput = document.getElementById("aiInput");
-    const sendAi = document.getElementById("sendAi");
-    const chatMessages = document.getElementById("chatMessages");
-
-    const themeButton = document.getElementById("themeButton");
-    const closeAi = document.getElementById("closeAi");
-    const aiNav = document.getElementById("aiNav");
-    const aiCardButton = document.getElementById("aiCardButton");
-
-    let servicesRequestId = 0;
-
-    const categoryFilter = document.getElementById("categoryFilter");
-    const statusFilter = document.getElementById("statusFilter");
-    const resetFilters = document.getElementById("resetFilters");
-
-    let selectedCategory = "";
-    let selectedStatus = "";
-
-    resetFilters.addEventListener("click", () => {
-        selectedCategory = "";
-        selectedStatus = "";
-        categoryFilter.value = "";
-        statusFilter.value = "";
-        serviceSearch.value = "";
-        loadServices("");
-    });
-
-    categoryFilter.addEventListener("change", () => {
-        selectedCategory = categoryFilter.value;
-        loadServices(serviceSearch.value.trim());
-    });
-
-    statusFilter.addEventListener("change", () => {
-        selectedStatus = statusFilter.value;
-        loadServices(serviceSearch.value.trim());
-    });
-
-
-    function openAi() {
-        aiPanel.classList.add("open");
-        setTimeout(() => aiInput.focus(), 150);
-    }
-
-    function closeAiPanel() {
-        aiPanel.classList.remove("open");
-    }
-
-    aiNav.addEventListener("click", (event) => {
-        event.preventDefault();
-        openAi();
-    });
-
-    aiCardButton.addEventListener("click", openAi);
-    closeAi.addEventListener("click", closeAiPanel);
-
-
-    function setTheme(theme) {
-        body.classList.toggle("light-theme", theme === "light");
-        localStorage.setItem("mfc-theme", theme);
-    }
-
-    setTheme(localStorage.getItem("mfc-theme") || "dark");
-
-    themeButton.addEventListener("click", () => {
-        const nextTheme = body.classList.contains("light-theme") ? "dark" : "light";
-        setTheme(nextTheme);
-    });
-
-
-    function escapeText(value) {
-        return value == null ? "" : String(value);
-    }
-
-    function serviceDescription(service) {
-        if (service.documents) {
-            const text = escapeText(service.documents).replace(/\s+/g, " ").trim();
-            if (text.length > 170) return text.slice(0, 167) + "...";
-            return text;
-        }
-
-        if (service.time) {
-            return "Срок предоставления: " + escapeText(service.time);
-        }
-
-        return "Информация об услуге доступна в базе МФЦ.";
-    }
-
-
-    function renderServices(services) {
-        servicesList.innerHTML = "";
-
-        if (!services.length) {
-            servicesList.innerHTML = `
-                <div class="no-results">
-                    Услуги по вашему запросу не найдены.
-                </div>
-            `;
-            return;
-        }
-
-        services.forEach((service) => {
-            const card = document.createElement("article");
-            card.className = "service-card";
-
-            card.innerHTML = `
-                <div class="service-icon">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M5 3h11l3 3v15H5z"></path>
-                        <path d="M14 3v4h5"></path>
-                        <path d="M8 12h8"></path>
-                        <path d="M8 16h6"></path>
-                    </svg>
-                </div>
-
-                <div class="service-info">
-                    <h3></h3>
-                    <p></p>
-                    <span>Государственная услуга</span>
-                </div>
-
-                <button class="open-service" type="button">Открыть</button>
-                <span class="service-arrow">›</span>
-            `;
-
-            card.querySelector("h3").textContent =
-                service.name || "Без названия";
-
-            card.querySelector("p").textContent =
-                serviceDescription(service);
-
-            card.querySelector(".open-service").addEventListener("click", () => {
-                askAboutExactService(service);
-            });
-
-            servicesList.appendChild(card);
-        });
-    }
-
-
-    async function loadServices(query = "") {
-        const requestId = ++servicesRequestId;
-
-        servicesList.innerHTML = `
-            <div class="loading">
-                Загрузка услуг...
+<div class="service-modal" id="serviceModal" hidden>
+    <button class="service-modal-backdrop" id="serviceModalBackdrop" type="button" aria-label="Закрыть карточку услуги"></button>
+    <article class="service-modal-card" role="dialog" aria-modal="true" aria-labelledby="serviceModalTitle">
+        <div class="service-modal-header">
+            <div>
+                <span class="service-modal-label">Данные PostgreSQL</span>
+                <h2 id="serviceModalTitle">Услуга</h2>
             </div>
-        `;
-
-        try {
-            const params = new URLSearchParams({
-                q: query,
-                limit: "100"
-            });
-
-            if (selectedCategory) params.set("category", selectedCategory);
-            if (selectedStatus) params.set("status", selectedStatus);
-
-            const response = await fetch("/api/services?" + params.toString());
-
-            if (!response.ok) {
-                throw new Error("HTTP " + response.status);
-            }
-
-            const services = await response.json();
-
-            if (requestId !== servicesRequestId) return;
-
-            renderServices(Array.isArray(services) ? services : []);
-        } catch (error) {
-            console.error("Ошибка загрузки услуг:", error);
-
-            servicesList.innerHTML = `
-                <div class="load-error">
-                    Не удалось загрузить услуги из PostgreSQL.
-                    <small>${escapeText(error.message)}</small>
-                </div>
-            `;
-        }
-    }
-
-
-    function openServiceSearch(query) {
-        serviceSearch.value = query;
-        loadServices(query);
-        window.scrollTo({top: 0, behavior: "smooth"});
-    }
-
-
-    serviceSearch.addEventListener("input", () => {
-        loadServices(serviceSearch.value.trim());
-    });
-
-
-    globalSearch.addEventListener("keydown", (event) => {
-        if (event.key === "Enter") {
-            const value = globalSearch.value.trim();
-
-            if (value) {
-                openServiceSearch(value);
-            }
-        }
-    });
-
-
-    function addMessage(type, text) {
-        const item = document.createElement("div");
-        item.className = "message " + type;
-
-        const label = type === "user" ? "Вы" : "ИИ-агент";
-
-        item.innerHTML = `
-            <span class="message-label">${label}</span>
-            <div class="message-bubble"></div>
-        `;
-
-        item.querySelector(".message-bubble").textContent = text;
-
-        chatMessages.appendChild(item);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-
-    function addTyping() {
-        const item = document.createElement("div");
-        item.className = "message assistant";
-        item.id = "typingMessage";
-
-        item.innerHTML = `
-            <span class="message-label">ИИ-агент</span>
-            <div class="message-bubble typing">Формирую ответ...</div>
-        `;
-
-        chatMessages.appendChild(item);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-
-    function removeTyping() {
-        document.getElementById("typingMessage")?.remove();
-    }
-
-
-
-    async function askAboutExactService(service) {
-        if (!service || !service.id || sendAi.disabled) {
-            return;
-        }
-
-        aiPanel.classList.add("open");
-
-        const question =
-            "Объясни простыми словами эту услугу: " +
-            (service.name || "");
-
-        addMessage("user", question);
-        sendAi.disabled = true;
-        addTyping();
-
-        try {
-            const response = await fetch(
-                "/api/chat/service/" +
-                encodeURIComponent(service.id),
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        message: question
-                    })
-                }
-            );
-
-            const data = await response.json();
-
-            removeTyping();
-
-            if (!response.ok) {
-                throw new Error(
-                    data.details ||
-                    data.error ||
-                    "Ошибка сервера"
-                );
-            }
-
-            addMessage(
-                "assistant",
-                data.answer || "Ответ не получен."
-            );
-        } catch (error) {
-            console.error("Ошибка ИИ услуги:", error);
-            removeTyping();
-
-            addMessage(
-                "assistant",
-                "Не удалось получить ответ от ИИ: " +
-                error.message
-            );
-        } finally {
-            sendAi.disabled = false;
-            aiInput.focus();
-        }
-    }
-
-    async function sendMessage() {
-        const text = aiInput.value.trim();
-
-        if (!text || sendAi.disabled) {
-            return;
-        }
-
-        addMessage("user", text);
-
-        aiInput.value = "";
-        sendAi.disabled = true;
-
-        addTyping();
-
-        try {
-            const response = await fetch("/api/chat", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({message: text})
-            });
-
-            const data = await response.json();
-
-            removeTyping();
-
-            if (!response.ok) {
-                throw new Error(
-                    data.details ||
-                    data.error ||
-                    "Ошибка сервера"
-                );
-            }
-
-            addMessage(
-                "assistant",
-                data.answer || "Ответ не получен."
-            );
-
-        } catch (error) {
-            console.error("Ошибка ИИ:", error);
-
-            removeTyping();
-
-            addMessage(
-                "assistant",
-                "Не удалось получить ответ: " + error.message
-            );
-        } finally {
-            sendAi.disabled = false;
-            aiInput.focus();
-        }
-    }
-
-
-    sendAi.addEventListener("click", sendMessage);
-
-    aiInput.addEventListener("keydown", (event) => {
-        if (event.key === "Enter" && !event.shiftKey) {
-            event.preventDefault();
-            sendMessage();
-        }
-    });
-
-
-    document.querySelectorAll(".ai-suggestions button").forEach((button) => {
-        button.addEventListener("click", async () => {
-            aiInput.value =
-                button.dataset.question ||
-                button.textContent.trim();
-
-            await sendMessage();
-        });
-    });
-
-
-    document.querySelectorAll(".nav-item").forEach((item) => {
-        item.addEventListener("click", (event) => {
-            const view = item.dataset.view;
-
-            if (view === "ai") {
-                return;
-            }
-
-            event.preventDefault();
-
-            document.querySelectorAll(".nav-item").forEach((nav) => {
-                nav.classList.remove("active");
-            });
-
-            item.classList.add("active");
-
-            if (view === "services") {
-                emptyView.hidden = true;
-                servicesList.hidden = false;
-                loadServices(serviceSearch.value.trim());
-                return;
-            }
-
-            if (view === "home") {
-                emptyView.hidden = true;
-                servicesList.hidden = false;
-                serviceSearch.value = "";
-                loadServices();
-                return;
-            }
-
-            emptyView.hidden = false;
-            servicesList.hidden = true;
-        });
-    });
-
-
-    loadServices();
-</script>
+            <button class="service-modal-close" id="serviceModalClose" type="button" aria-label="Закрыть">×</button>
+        </div>
+        <div class="service-modal-content" id="serviceModalContent"></div>
+    </article>
+</div>
+
+<script src="{{ url_for('static', filename='app.js') }}" defer></script>
 
 </body>
 </html>
