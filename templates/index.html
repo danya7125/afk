@@ -1,177 +1,171 @@
 <!doctype html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>МФЦ — Цифровой помощник</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>МФЦ — цифровой помощник</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
-<div class="app">
-
+<body data-theme="blue">
+<div class="shell">
     <aside class="sidebar" id="sidebar">
         <div class="brand">
-            <div class="brand-mark">М</div>
+            <div class="brand-mark">МФЦ</div>
             <div>
-                <div class="brand-title">МФЦ</div>
-                <div class="brand-subtitle">Цифровой помощник</div>
+                <div class="brand-name">Многофункциональный центр</div>
+                <div class="brand-caption">Цифровой сервис</div>
             </div>
         </div>
 
-        <button class="new-chat" id="newChatBtn">+&nbsp;&nbsp; Новый диалог</button>
+        <button class="sidebar-action" id="newChatBtn">Новый диалог</button>
 
-        <div class="section">
-            <div class="section-title">Разделы</div>
-            <button class="nav-item active" data-page="assistant"><span>ЧАТ</span> Помощник</button>
-            <button class="nav-item" data-page="services"><span>УСЛ</span> Услуги</button>
-            <button class="nav-item" data-page="info"><span>ИНФ</span> Информация</button>
-        </div>
+        <nav class="nav">
+            <button class="nav-link active" data-page="assistant">Помощник</button>
+            <button class="nav-link" data-page="services">Услуги</button>
+            <button class="nav-link" data-page="info">Информация</button>
+        </nav>
 
-        <div class="section">
-            <div class="section-title">Недавние</div>
-            <button class="history-item" data-question="Какие документы нужны для замены паспорта?">Замена паспорта</button>
-            <button class="history-item" data-question="Как записаться на приём в МФЦ?">Запись на приём</button>
+        <div class="recent">
+            <div class="nav-label">Последние запросы</div>
+            <button class="recent-item" data-question="Как заменить паспорт?">Как заменить паспорт?</button>
+            <button class="recent-item" data-question="Как записаться на приём?">Как записаться на приём?</button>
         </div>
 
         <div class="sidebar-bottom">
-            <button class="settings" id="settingsBtn">НАСТРОЙКИ</button>
+            <button class="settings-link" id="settingsBtn">Настройки</button>
         </div>
     </aside>
 
     <main class="main">
-        <header class="topbar">
-            <button class="mobile-menu" id="mobileMenuBtn">МЕНЮ</button>
-            <div class="title">
-                <span class="status"></span>
-                <span id="pageTitle">Помощник МФЦ</span>
-            </div>
-
-            <div class="top-actions">
-                <button class="icon-button" id="themeBtn">ТЕМА</button>
-                <button class="icon-button" id="clearBtn">ОЧИСТИТЬ</button>
+        <header class="header">
+            <button class="mobile-menu" id="mobileMenu">Меню</button>
+            <div class="header-title" id="pageTitle">Помощник</div>
+            <div class="header-right">
+                <span class="online">Система готова</span>
+                <button class="plain-button" id="clearBtn">Очистить</button>
             </div>
         </header>
 
-        <section class="content">
-            <div class="page assistant-page active-page" id="assistantPage">
-                <div class="welcome">
-                    <div class="ai-mark">AI</div>
-                    <h1>Чем могу помочь?</h1>
-                    <p>
-                        Задайте вопрос об услугах МФЦ текстом или голосом.
-                        Сейчас работает демонстрационный интерфейс будущего помощника.
+        <section class="main-content">
+            <div class="page page-active" id="page-assistant">
+                <div class="intro">
+                    <div class="intro-line"></div>
+                    <p class="eyebrow">ЦИФРОВОЙ ПОМОЩНИК МФЦ</p>
+                    <h1>Какой вопрос<br>вас интересует?</h1>
+                    <p class="intro-copy">
+                        Получите информацию об услугах, документах и порядке обращения.
                     </p>
-
-                    <div class="suggestions">
-                        <button class="suggestion" data-question="Какие документы нужны для замены паспорта?">
-                            <strong>ПАСПОРТ</strong>
-                            Какие документы нужны для замены паспорта?
-                        </button>
-
-                        <button class="suggestion" data-question="Как записаться на приём в МФЦ?">
-                            <strong>ЗАПИСЬ</strong>
-                            Как записаться на приём в МФЦ?
-                        </button>
-
-                        <button class="suggestion" data-question="Где находится ближайшее отделение?">
-                            <strong>АДРЕС</strong>
-                            Где находится ближайшее отделение?
-                        </button>
-
-                        <button class="suggestion" data-question="Какие услуги можно получить в МФЦ?">
-                            <strong>УСЛУГИ</strong>
-                            Какие услуги можно получить в МФЦ?
-                        </button>
-                    </div>
                 </div>
 
-                <div class="demo-chat" id="demoChat"></div>
+                <div class="quick-grid">
+                    <button class="quick-card" data-question="Как заменить паспорт?">
+                        <span class="quick-label">ДОКУМЕНТЫ</span>
+                        <strong>Замена паспорта</strong>
+                        <small>Документы и порядок обращения</small>
+                    </button>
+
+                    <button class="quick-card" data-question="Как записаться на приём?">
+                        <span class="quick-label">ЗАПИСЬ</span>
+                        <strong>Предварительная запись</strong>
+                        <small>Как записаться на приём</small>
+                    </button>
+
+                    <button class="quick-card" data-question="Где находится отделение МФЦ?">
+                        <span class="quick-label">ОТДЕЛЕНИЯ</span>
+                        <strong>Адреса и график</strong>
+                        <small>Информация об отделениях</small>
+                    </button>
+
+                    <button class="quick-card" data-question="Какие услуги доступны в МФЦ?">
+                        <span class="quick-label">УСЛУГИ</span>
+                        <strong>Каталог услуг</strong>
+                        <small>Основные направления работы</small>
+                    </button>
+                </div>
+
+                <div class="chat" id="chat"></div>
             </div>
 
-            <div class="page" id="servicesPage">
-                <div class="page-card">
-                    <div class="page-kicker">РАЗДЕЛ</div>
+            <div class="page" id="page-services">
+                <div class="section-head">
+                    <p class="eyebrow">КАТАЛОГ</p>
                     <h2>Услуги МФЦ</h2>
-                    <p>Здесь позже появится список услуг из базы данных.</p>
-                    <div class="service-list">
-                        <button class="service-card" data-question="Расскажи про замену паспорта">
-                            <strong>Замена паспорта</strong>
-                            <span>Документы, сроки и порядок обращения</span>
-                        </button>
-                        <button class="service-card" data-question="Расскажи про запись на приём">
-                            <strong>Запись на приём</strong>
-                            <span>Порядок предварительной записи</span>
-                        </button>
-                        <button class="service-card" data-question="Какие справки можно получить в МФЦ?">
-                            <strong>Справки и документы</strong>
-                            <span>Основные виды доступных услуг</span>
-                        </button>
-                    </div>
+                    <p>Базовый каталог уже загружается из локальной базы данных.</p>
+                </div>
+                <div class="service-list">
+                    {% for service in services %}
+                    <button class="service-row" data-question="{{ service.name }}">
+                        <div>
+                            <strong>{{ service.name }}</strong>
+                            <span>{{ service.description }}</span>
+                        </div>
+                        <small>{{ service.category }}</small>
+                    </button>
+                    {% endfor %}
                 </div>
             </div>
 
-            <div class="page" id="infoPage">
-                <div class="page-card">
-                    <div class="page-kicker">ИНФОРМАЦИЯ</div>
-                    <h2>Информация о МФЦ</h2>
-                    <p>В этой версии раздел демонстрационный. Позже сюда можно подключить адреса, график работы, контакты и актуальные данные отделений.</p>
-                    <div class="info-grid">
-                        <div><span>Адреса</span><strong>Будет подключено</strong></div>
-                        <div><span>График</span><strong>Будет подключено</strong></div>
-                        <div><span>Телефон</span><strong>Будет подключено</strong></div>
-                    </div>
+            <div class="page" id="page-info">
+                <div class="section-head">
+                    <p class="eyebrow">СПРАВОЧНАЯ ИНФОРМАЦИЯ</p>
+                    <h2>Информация</h2>
+                    <p>
+                        В этом разделе позже можно подключить реальные адреса отделений,
+                        график работы, контакты и правила оказания услуг.
+                    </p>
+                </div>
+                <div class="info-table">
+                    <div><span>Адреса отделений</span><strong>Подключаются на следующем этапе</strong></div>
+                    <div><span>График работы</span><strong>Подключается на следующем этапе</strong></div>
+                    <div><span>Телефон</span><strong>Подключается на следующем этапе</strong></div>
                 </div>
             </div>
         </section>
 
-        <div class="composer-area">
+        <footer class="composer-wrap">
             <div class="composer">
-                <button class="voice-button" id="voiceBtn">ГОЛОС</button>
-                <input id="messageInput" type="text" placeholder="Напишите свой вопрос...">
-                <button class="send-button" id="sendBtn">ОТПРАВИТЬ</button>
+                <button class="voice-button" id="voiceBtn">Голос</button>
+                <input id="messageInput" placeholder="Введите вопрос..." autocomplete="off">
+                <button class="send-button" id="sendBtn">Отправить</button>
             </div>
-
-            <div class="hint">
-                Сейчас это демонстрационный интерфейс. На следующем этапе подключается Python backend и ИИ.
-            </div>
-        </div>
+            <div class="composer-note">Ответы ИИ будут подключены после интеграции API.</div>
+        </footer>
     </main>
 </div>
 
-<div class="modal-backdrop" id="settingsBackdrop">
-    <div class="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
-        <div class="modal-header">
+<div class="modal" id="settingsModal" aria-hidden="true">
+    <div class="modal-box">
+        <div class="modal-head">
             <div>
-                <div class="page-kicker">НАСТРОЙКИ</div>
-                <h2 id="settingsTitle">Настройки интерфейса</h2>
+                <p class="eyebrow">НАСТРОЙКИ</p>
+                <h2>Внешний вид</h2>
             </div>
-            <button class="close-btn" id="closeSettingsBtn">ЗАКРЫТЬ</button>
+            <button class="close" id="closeSettings">Закрыть</button>
         </div>
 
-        <div class="settings-group">
-            <div class="setting-row">
-                <div>
-                    <strong>Тема</strong>
-                    <span>Выберите оформление сайта</span>
-                </div>
-                <select id="themeSelect">
-                    <option value="dark">Тёмная</option>
-                    <option value="light">Светлая</option>
-                </select>
-            </div>
+        <div class="theme-choice">
+            <button class="theme-card selected" data-theme-value="blue">
+                <span class="theme-preview preview-blue"></span>
+                <strong>Синяя</strong>
+                <small>Основная тема проекта</small>
+            </button>
 
-            <div class="setting-row">
-                <div>
-                    <strong>Показывать подсказки</strong>
-                    <span>Быстрые варианты вопросов на главной</span>
-                </div>
-                <button class="toggle active" id="tipsToggle" aria-pressed="true"><span></span></button>
-            </div>
+            <button class="theme-card" data-theme-value="light">
+                <span class="theme-preview preview-light"></span>
+                <strong>Белая</strong>
+                <small>Светлая и нейтральная</small>
+            </button>
+
+            <button class="theme-card" data-theme-value="dark">
+                <span class="theme-preview preview-dark"></span>
+                <strong>Тёмная</strong>
+                <small>Для работы вечером</small>
+            </button>
         </div>
 
         <div class="modal-footer">
-            <button class="secondary-btn" id="resetSettingsBtn">Сбросить</button>
-            <button class="primary-btn" id="saveSettingsBtn">Сохранить</button>
+            <button class="plain-button" id="resetTheme">Сбросить</button>
+            <button class="send-button" id="saveTheme">Сохранить</button>
         </div>
     </div>
 </div>
@@ -180,156 +174,158 @@
 
 <script>
 const body = document.body;
-const pages = {
-    assistant: document.getElementById("assistantPage"),
-    services: document.getElementById("servicesPage"),
-    info: document.getElementById("infoPage")
-};
-const pageTitle = document.getElementById("pageTitle");
-const sidebar = document.getElementById("sidebar");
+const modal = document.getElementById("settingsModal");
 const toast = document.getElementById("toast");
+const chat = document.getElementById("chat");
 const input = document.getElementById("messageInput");
-const demoChat = document.getElementById("demoChat");
-const welcome = document.querySelector(".welcome");
-const settingsBackdrop = document.getElementById("settingsBackdrop");
-const tipsToggle = document.getElementById("tipsToggle");
-const suggestions = document.querySelector(".suggestions");
-const themeSelect = document.getElementById("themeSelect");
-
-const titles = {
-    assistant: "Помощник МФЦ",
-    services: "Услуги МФЦ",
-    info: "Информация"
+const suggestions = document.querySelectorAll("[data-question]");
+const navLinks = document.querySelectorAll(".nav-link");
+const pages = {
+    assistant: document.getElementById("page-assistant"),
+    services: document.getElementById("page-services"),
+    info: document.getElementById("page-info")
 };
 
-function showToast(text) {
-    toast.textContent = text;
+function toastMessage(message) {
+    toast.textContent = message;
     toast.classList.add("show");
-    clearTimeout(showToast.timer);
-    showToast.timer = setTimeout(() => toast.classList.remove("show"), 2200);
+    clearTimeout(window.toastTimer);
+    window.toastTimer = setTimeout(() => toast.classList.remove("show"), 2000);
 }
 
-function setPage(name) {
-    Object.values(pages).forEach(page => page.classList.remove("active-page"));
-    pages[name].classList.add("active-page");
-
-    document.querySelectorAll(".nav-item").forEach(item => {
-        item.classList.toggle("active", item.dataset.page === name);
+function selectPage(page) {
+    Object.entries(pages).forEach(([key, element]) => {
+        element.classList.toggle("page-active", key === page);
     });
 
-    pageTitle.textContent = titles[name];
-    sidebar.classList.remove("open");
+    navLinks.forEach(link => {
+        link.classList.toggle("active", link.dataset.page === page);
+    });
+
+    const titles = { assistant: "Помощник", services: "Услуги", info: "Информация" };
+    document.getElementById("pageTitle").textContent = titles[page];
+    document.getElementById("sidebar").classList.remove("open");
 }
 
-document.querySelectorAll(".nav-item").forEach(button => {
-    button.addEventListener("click", () => setPage(button.dataset.page));
+navLinks.forEach(link => {
+    link.addEventListener("click", () => selectPage(link.dataset.page));
 });
 
-document.querySelectorAll(".suggestion, .service-card, .history-item").forEach(button => {
-    button.addEventListener("click", () => {
-        const question = button.dataset.question;
-        setPage("assistant");
+suggestions.forEach(element => {
+    element.addEventListener("click", () => {
+        const question = element.dataset.question;
+        selectPage("assistant");
         input.value = question;
         input.focus();
     });
 });
 
-document.getElementById("newChatBtn").addEventListener("click", () => {
-    demoChat.innerHTML = "";
-    welcome.style.display = "";
-    input.value = "";
-    setPage("assistant");
-    showToast("Новый диалог создан");
-});
-
-document.getElementById("clearBtn").addEventListener("click", () => {
-    demoChat.innerHTML = "";
-    welcome.style.display = "";
-    showToast("Диалог очищен");
-});
-
-document.getElementById("mobileMenuBtn").addEventListener("click", () => {
-    sidebar.classList.toggle("open");
-});
-
-document.getElementById("sendBtn").addEventListener("click", sendDemoMessage);
+document.getElementById("sendBtn").addEventListener("click", sendMessage);
 input.addEventListener("keydown", event => {
-    if (event.key === "Enter") sendDemoMessage();
+    if (event.key === "Enter") {
+        event.preventDefault();
+        sendMessage();
+    }
 });
 
-function sendDemoMessage() {
+async function sendMessage() {
     const text = input.value.trim();
     if (!text) {
-        showToast("Введите вопрос");
+        toastMessage("Введите вопрос");
         return;
     }
 
-    welcome.style.display = "none";
-
     const user = document.createElement("div");
-    user.className = "chat-message user";
-    user.innerHTML = "<span>ВЫ</span><p></p>";
+    user.className = "message user-message";
+    user.innerHTML = `<span>ВЫ</span><p></p>`;
     user.querySelector("p").textContent = text;
+    chat.appendChild(user);
 
-    const assistant = document.createElement("div");
-    assistant.className = "chat-message assistant";
-    assistant.innerHTML = "<span>ПОМОЩНИК МФЦ</span><p>Демонстрационный ответ. Здесь позже будет подключён настоящий ИИ.</p>";
-
-    demoChat.appendChild(user);
-    demoChat.appendChild(assistant);
     input.value = "";
-    showToast("Сообщение отправлено");
+
+    try {
+        const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({message: text})
+        });
+
+        const data = await response.json();
+
+        const assistant = document.createElement("div");
+        assistant.className = "message assistant-message";
+        assistant.innerHTML = `<span>ПОМОЩНИК</span><p></p>`;
+        assistant.querySelector("p").textContent = data.answer || "Не удалось получить ответ.";
+        chat.appendChild(assistant);
+
+        chat.lastElementChild.scrollIntoView({behavior: "smooth", block: "nearest"});
+    } catch (error) {
+        toastMessage("Не удалось связаться с сервером");
+    }
 }
 
-document.getElementById("voiceBtn").addEventListener("click", () => {
-    showToast("Голосовой модуль будет подключён позже");
+document.getElementById("newChatBtn").addEventListener("click", async () => {
+    await fetch("/api/reset", {method: "POST"});
+    chat.innerHTML = "";
+    input.value = "";
+    selectPage("assistant");
+    toastMessage("Новый диалог создан");
 });
 
-function applyTheme(theme) {
-    body.classList.toggle("light-mode", theme === "light");
-    themeSelect.value = theme;
-    localStorage.setItem("mfc-theme", theme);
-}
+document.getElementById("clearBtn").addEventListener("click", async () => {
+    await fetch("/api/reset", {method: "POST"});
+    chat.innerHTML = "";
+    toastMessage("Диалог очищен");
+});
 
-document.getElementById("themeBtn").addEventListener("click", () => {
-    const nextTheme = body.classList.contains("light-mode") ? "dark" : "light";
-    applyTheme(nextTheme);
-    showToast(nextTheme === "light" ? "Светлая тема" : "Тёмная тема");
+document.getElementById("voiceBtn").addEventListener("click", () => {
+    toastMessage("Голосовой модуль подключим следующим этапом");
 });
 
 document.getElementById("settingsBtn").addEventListener("click", () => {
-    settingsBackdrop.classList.add("open");
+    modal.classList.add("open");
+    modal.setAttribute("aria-hidden", "false");
 });
 
-document.getElementById("closeSettingsBtn").addEventListener("click", () => {
-    settingsBackdrop.classList.remove("open");
+document.getElementById("closeSettings").addEventListener("click", closeModal);
+modal.addEventListener("click", event => {
+    if (event.target === modal) closeModal();
 });
 
-settingsBackdrop.addEventListener("click", event => {
-    if (event.target === settingsBackdrop) settingsBackdrop.classList.remove("open");
+function closeModal() {
+    modal.classList.remove("open");
+    modal.setAttribute("aria-hidden", "true");
+}
+
+const themeCards = document.querySelectorAll(".theme-card");
+
+function setTheme(theme) {
+    body.dataset.theme = theme;
+    localStorage.setItem("mfc-theme", theme);
+    themeCards.forEach(card => {
+        card.classList.toggle("selected", card.dataset.themeValue === theme);
+    });
+}
+
+themeCards.forEach(card => {
+    card.addEventListener("click", () => setTheme(card.dataset.themeValue));
 });
 
-tipsToggle.addEventListener("click", () => {
-    const active = tipsToggle.classList.toggle("active");
-    tipsToggle.setAttribute("aria-pressed", String(active));
-    suggestions.style.display = active ? "" : "none";
+document.getElementById("saveTheme").addEventListener("click", () => {
+    closeModal();
+    toastMessage("Тема сохранена");
 });
 
-document.getElementById("saveSettingsBtn").addEventListener("click", () => {
-    applyTheme(themeSelect.value);
-    settingsBackdrop.classList.remove("open");
-    showToast("Настройки сохранены");
+document.getElementById("resetTheme").addEventListener("click", () => {
+    setTheme("blue");
+    toastMessage("Тема сброшена");
 });
 
-document.getElementById("resetSettingsBtn").addEventListener("click", () => {
-    applyTheme("dark");
-    tipsToggle.classList.add("active");
-    tipsToggle.setAttribute("aria-pressed", "true");
-    suggestions.style.display = "";
-    showToast("Настройки сброшены");
+document.getElementById("mobileMenu").addEventListener("click", () => {
+    document.getElementById("sidebar").classList.toggle("open");
 });
 
-applyTheme(localStorage.getItem("mfc-theme") || "dark");
+setTheme(localStorage.getItem("mfc-theme") || "blue");
 </script>
 </body>
 </html>
