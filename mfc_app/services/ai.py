@@ -67,6 +67,43 @@ class AiAssistantService:
 
         return response.choices[0].message.content, matches
 
+    def answer_for_service(self, question: str, service_id: str) -> tuple[str, Service]:
+        service = self.repository.get_by_id(service_id)
+
+        if not service:
+            raise LookupError("Услуга не найдена")
+
+        credentials = current_app.config.get("GIGACHAT_CREDENTIALS")
+        if not credentials:
+            raise RuntimeError("Не найден GIGACHAT_CREDENTIALS в .env")
+
+        context = self._build_context(question, [service])
+        user_prompt = (
+            f"Пользователь выбрал конкретную услугу: {service.name}.\\n"
+            f"Вопрос пользователя:\\n{question}\\n\\n"
+            f"Данные именно этой услуги из базы МФЦ:\\n{context}"
+        )
+
+        with GigaChat(
+            base_url="https://api.giga.chat/v1",
+            credentials=credentials,
+            scope=current_app.config["GIGACHAT_SCOPE"],
+            verify_ssl_certs=current_app.config["GIGACHAT_VERIFY_SSL"],
+        ) as client:
+            chat = Chat(
+                model=current_app.config["GIGACHAT_MODEL"],
+                messages=[
+                    Messages(role=MessagesRole.SYSTEM, content=_SYSTEM_PROMPT),
+                    Messages(role=MessagesRole.USER, content=user_prompt),
+                ],
+            )
+            response = client.chat(chat)
+
+        if not response.choices:
+            raise RuntimeError("GigaChat вернул пустой ответ")
+
+        return response.choices[0].message.content, service
+
     @staticmethod
     def _build_context(question: str, services: list[Service], max_chars: int = 30000) -> str:
         q = question.lower()

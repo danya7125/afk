@@ -45,6 +45,39 @@ def service_details(service_id: str):
     return jsonify(service.to_dict())
 
 
+@api_bp.post("/chat/service/<service_id>")
+def chat_service(service_id: str):
+    payload = request.get_json(silent=True) or {}
+    question = (payload.get("message") or "").strip()
+
+    if not question:
+        question = "Объясни эту услугу простыми словами."
+
+    max_chars = current_app.config["CHAT_MAX_INPUT_CHARS"]
+    if len(question) > max_chars:
+        return jsonify({
+            "error": f"Запрос слишком длинный. Максимум {max_chars} символов."
+        }), 400
+
+    try:
+        answer, service = AiAssistantService().answer_for_service(
+            question,
+            service_id,
+        )
+        return jsonify({
+            "answer": answer,
+            "service": service.to_summary_dict(),
+            "source": "postgresql",
+        })
+    except LookupError:
+        return jsonify({"error": "Услуга не найдена"}), 404
+    except Exception:
+        logger.exception("Ошибка при объяснении конкретной услуги")
+        return jsonify({
+            "error": "Не удалось получить ответ ИИ. Проверьте настройки сервиса и повторите запрос."
+        }), 500
+
+
 @api_bp.post("/chat")
 def chat():
     payload = request.get_json(silent=True) or {}

@@ -14,6 +14,7 @@ const themeButton = document.getElementById("themeButton");
 const closeAi = document.getElementById("closeAi");
 const aiNav = document.getElementById("aiNav");
 const aiCardButton = document.getElementById("aiCardButton");
+const clearChat = document.getElementById("clearChat");
 
 const categoryFilter = document.getElementById("categoryFilter");
 const statusFilter = document.getElementById("statusFilter");
@@ -30,6 +31,82 @@ let selectedCategory = "";
 let selectedStatus = "";
 let searchTimer = null;
 
+const CHAT_STORAGE_KEY = "mfc-chat-history-v2";
+const UI_STORAGE_KEY = "mfc-ui-state-v2";
+const MAX_SAVED_MESSAGES = 60;
+
+function saveChat() {
+    const messages = [...chatMessages.querySelectorAll(".message")].map((item) => ({
+        type: item.classList.contains("user") ? "user" : "assistant",
+        text: item.querySelector(".message-bubble")?.textContent || "",
+    })).filter((item) => item.text);
+
+    localStorage.setItem(
+        CHAT_STORAGE_KEY,
+        JSON.stringify(messages.slice(-MAX_SAVED_MESSAGES))
+    );
+}
+
+function restoreChat() {
+    try {
+        const raw = localStorage.getItem(CHAT_STORAGE_KEY);
+        if (!raw) return;
+
+        const messages = JSON.parse(raw);
+        if (!Array.isArray(messages)) return;
+
+        messages.forEach((message) => {
+            if (!message || !message.text) return;
+            addMessage(message.type === "user" ? "user" : "assistant", message.text);
+        });
+    } catch (error) {
+        console.warn("Не удалось восстановить историю чата:", error);
+    }
+}
+
+function saveUiState() {
+    localStorage.setItem(
+        UI_STORAGE_KEY,
+        JSON.stringify({
+            theme: body.classList.contains("light-theme") ? "light" : "dark",
+            category: selectedCategory,
+            status: selectedStatus,
+            search: serviceSearch.value,
+        })
+    );
+}
+
+function restoreUiState() {
+    try {
+        const raw = localStorage.getItem(UI_STORAGE_KEY);
+        if (!raw) return;
+
+        const state = JSON.parse(raw);
+        if (!state || typeof state !== "object") return;
+
+        if (state.theme === "light" || state.theme === "dark") {
+            setTheme(state.theme);
+        }
+
+        if (typeof state.category === "string") {
+            selectedCategory = state.category;
+            categoryFilter.value = state.category;
+        }
+
+        if (typeof state.status === "string") {
+            selectedStatus = state.status;
+            statusFilter.value = state.status;
+        }
+
+        if (typeof state.search === "string") {
+            serviceSearch.value = state.search;
+        }
+    } catch (error) {
+        console.warn("Не удалось восстановить настройки интерфейса:", error);
+    }
+}
+
+
 function openAi() {
     aiPanel.classList.add("open");
     setTimeout(() => aiInput.focus(), 150);
@@ -45,6 +122,11 @@ aiNav.addEventListener("click", (event) => {
 });
 
 aiCardButton.addEventListener("click", openAi);
+
+clearChat.addEventListener("click", () => {
+    chatMessages.innerHTML = "";
+    localStorage.removeItem(CHAT_STORAGE_KEY);
+});
 closeAi.addEventListener("click", closeAiPanel);
 
 function setTheme(theme) {
@@ -57,6 +139,7 @@ setTheme(localStorage.getItem("mfc-theme") || "dark");
 themeButton.addEventListener("click", () => {
     const nextTheme = body.classList.contains("light-theme") ? "dark" : "light";
     setTheme(nextTheme);
+    saveUiState();
 });
 
 function shorten(value, maxLength = 220) {
@@ -95,13 +178,14 @@ function renderServices(services) {
                 <span>Государственная услуга</span>
             </div>
             <button class="open-service" type="button">Открыть</button>
-            <span class="service-arrow">›</span>
+            <button class="service-arrow ai-service-button" type="button" aria-label="Спросить ИИ об услуге" title="Спросить ИИ">›</button>
         `;
 
         card.querySelector("h3").textContent = service.name || "Без названия";
         // В карточке показывается именно description_text из PostgreSQL, без участия ИИ.
         card.querySelector("p").textContent = shorten(service.description);
         card.querySelector(".open-service").addEventListener("click", () => openService(service.id));
+        card.querySelector(".ai-service-button").addEventListener("click", () => askAiForService(service.id, service.name));
         servicesList.appendChild(card);
     });
 }
@@ -199,16 +283,19 @@ resetFilters.addEventListener("click", () => {
     categoryFilter.value = "";
     statusFilter.value = "";
     serviceSearch.value = "";
+    saveUiState();
     loadServices("");
 });
 
 categoryFilter.addEventListener("change", () => {
     selectedCategory = categoryFilter.value;
+    saveUiState();
     loadServices(serviceSearch.value.trim());
 });
 
 statusFilter.addEventListener("change", () => {
     selectedStatus = statusFilter.value;
+    saveUiState();
     loadServices(serviceSearch.value.trim());
 });
 
@@ -274,6 +361,48 @@ function removeTyping() {
     document.getElementById("typingMessage")?.remove();
 }
 
+
+async function askAiForService(serviceId, serviceName) {
+    if (!serviceId || sendAi.disabled) return;
+
+    openAi();
+
+    const question = `Объясни простыми словами услугу: ${serviceName || ""}`.trim();
+    addMessage("user", question);
+    sendAi.disabled = true;
+    addTyping();
+
+    try {
+        const response = await fetch(
+            "/api/chat/service/" + encodeURIComponent(serviceId),
+            {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({message: question})
+            }
+        );
+
+        const data = await response.json();
+        removeTyping();
+
+        if (!response.ok) {
+            throw new Error(data.error || "Ошибка сервера");
+        }
+
+        addMessage("assistant", data.answer || "Ответ не получен.");
+        saveChat();
+    } catch (error) {
+        console.error("Ошибка ИИ услуги:", error);
+        removeTyping();
+        addMessage("assistant", "Не удалось получить ответ: " + error.message);
+        saveChat();
+        saveChat();
+    } finally {
+        sendAi.disabled = false;
+        aiInput.focus();
+    }
+}
+
 async function sendMessage() {
     const text = aiInput.value.trim();
     if (!text || sendAi.disabled) return;
@@ -293,6 +422,7 @@ async function sendMessage() {
         removeTyping();
         if (!response.ok) throw new Error(data.error || "Ошибка сервера");
         addMessage("assistant", data.answer || "Ответ не получен.", data.matched || []);
+        saveChat();
     } catch (error) {
         console.error("Ошибка ИИ:", error);
         removeTyping();
@@ -338,7 +468,9 @@ document.querySelectorAll(".nav-item").forEach((item) => {
             emptyView.hidden = true;
             servicesList.hidden = false;
             serviceSearch.value = "";
-            loadServices();
+            restoreUiState();
+restoreChat();
+loadServices(serviceSearch.value.trim());
             return;
         }
 

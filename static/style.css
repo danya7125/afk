@@ -1315,3 +1315,47 @@ body.light-theme .filter-hint {
     border-color: rgba(44, 145, 255, .7);
     background: rgba(8, 124, 255, .14);
 }
+
+
+.ai-service-button {
+    width: 34px;
+    height: 38px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    background: transparent;
+    color: #79a0bf;
+    cursor: pointer;
+    font-size: 23px;
+    line-height: 1;
+}
+
+.ai-service-button:hover {
+    color: #ffffff;
+    background: rgba(8,124,255,.12);
+    border-color: #145687;
+}
+
+.clear-chat {
+    margin-left: auto;
+    padding: 7px 10px;
+    border: 1px solid #234863;
+    border-radius: 7px;
+    background: #0b2035;
+    color: #8eabc4;
+    cursor: pointer;
+    font-size: 10px;
+}
+
+.clear-chat:hover {
+    color: #fff;
+    border-color: #1685ff;
+}
+
+body.light-theme .clear-chat {
+    background: #f4f9fd;
+    border-color: #d3e2ee;
+    color: #50738e;
+}
