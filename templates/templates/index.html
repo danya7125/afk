@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>МФЦ — Государственные и муниципальные услуги</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+<div class="app">
+
+    <aside class="sidebar" id="sidebar">
+
+        <div class="brand">
+            <div class="brand-logo"><span></span></div>
+
+            <div class="brand-text">
+                <strong>МФЦ</strong>
+                <small>Государственные<br>и муниципальные услуги</small>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item" data-view="home">
+                <span class="nav-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M3 11.5 12 4l9 7.5"></path>
+                        <path d="M5.5 10.5V20h13v-9.5"></path>
+                    </svg>
+                </span>
+                <span>Главная</span>
+            </a>
+
+            <a href="#" class="nav-item active" data-view="services">
+                <span class="nav-icon">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="5" y="3" width="14" height="18" rx="2"></rect>
+                        <path d="M8 8h8"></path>
+                        <path d="M8 12h5"></path>
+                        <path d="M8 16h4"></path>
+                    </svg>
+                </span>
+                <span>Услуги</span>
+            </a>
+
+            <a href="#" class="nav-item" data-view="applications">
+                <span class="nav-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M6 3h9l3 3v15H6z"></path>
+                        <path d="M14 3v4h4"></path>
+                        <path d="M9 11h6"></path>
+                        <path d="M9 15h6"></path>
+                    </svg>
+                </span>
+                <span>Заявления</span>
+            </a>
+
+            <a href="#" class="nav-item" data-view="documents">
+                <span class="nav-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"></path>
+                        <path d="M8 7h8"></path>
+                    </svg>
+                </span>
+                <span>Нормативные<br>документы</span>
+            </a>
+
+            <a href="#" class="nav-item" data-view="directories">
+                <span class="nav-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M6 4h12v16H6z"></path>
+                        <path d="M9 8h6"></path>
+                        <path d="M9 12h6"></path>
+                        <path d="M9 16h4"></path>
+                    </svg>
+                </span>
+                <span>Справочники</span>
+            </a>
+
+            <a href="#" class="nav-item" data-view="reports">
+                <span class="nav-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M5 19V5"></path>
+                        <path d="M5 18h15"></path>
+                        <path d="m8 15 3-4 3 2 4-6"></path>
+                    </svg>
+                </span>
+                <span>Отчёты</span>
+            </a>
+
+            <a href="#" class="nav-item ai-nav" id="aiNav" data-view="ai">
+                <span class="nav-icon">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="4" y="6" width="16" height="12" rx="3"></rect>
+                        <path d="M8 10h.01"></path>
+                        <path d="M16 10h.01"></path>
+                        <path d="M8 14h8"></path>
+                        <path d="M12 3v3"></path>
+                    </svg>
+                </span>
+                <span>ИИ-агент</span>
+                <span class="new-label">Новое</span>
+            </a>
+
+            <a href="#" class="nav-item" id="settingsNav" data-view="settings">
+                <span class="nav-icon">
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.8 1.8 0 0 0 .3 2l.1.1-1.8 1.8-.1-.1a1.8 1.8 0 0 0-2-.3 1.8 1.8 0 0 0-1.1 1.7V21h-2.6v-.2a1.8 1.8 0 0 0-1.1-1.7 1.8 1.8 0 0 0-2 .3l-.1.1-1.8-1.8.1-.1a1.8 1.8 0 0 0 .3-2A1.8 1.8 0 0 0 6 14H5.8v-2.6H6a1.8 1.8 0 0 0 1.7-1.1 1.8 1.8 0 0 0-.3-2l-.1-.1 1.8-1.8.1.1a1.8 1.8 0 0 0 2 .3A1.8 1.8 0 0 0 12.3 5V4.8h2.6V5a1.8 1.8 0 0 0 1.1 1.7 1.8 1.8 0 0 0 2-.3l.1-.1 1.8 1.8-.1.1a1.8 1.8 0 0 0-.3 2A1.8 1.8 0 0 0 21 11.4h.2V14H21a1.8 1.8 0 0 0-1.6 1z"></path>
+                    </svg>
+                </span>
+                <span>Настройки</span>
+            </a>
+        </nav>
+
+        <button class="ai-card" id="aiCardButton" type="button">
+            <span class="ai-card-image">
+                <img src="{{ url_for('static', filename='images/ai-bot.png') }}" alt="ИИ-агент">
+            </span>
+
+            <span class="ai-card-content">
+                <strong>ИИ-агент</strong>
+                <span>Ваш умный помощник</span>
+            </span>
+
+            <span class="ai-open">
+                <svg viewBox="0 0 24 24">
+                    <path d="m9 6 6 6-6 6"></path>
+                </svg>
+            </span>
+        </button>
+
+        <div class="support">
+            <div class="support-title">Техническая поддержка</div>
+            <div class="support-phone">8 800 100-00-01</div>
+            <div class="support-time">Пн–Пт, 08:00–20:00</div>
+        </div>
+    </aside>
+
+
+    <main class="main">
+
+        <header class="topbar">
+            <div class="search-top">
+                <svg viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="6"></circle>
+                    <path d="m16 16 5 5"></path>
+                </svg>
+
+                <input id="globalSearch" type="text" placeholder="Поиск по услугам и документам...">
+            </div>
+
+            <div class="top-actions">
+                <button class="icon-btn" id="themeButton" type="button" aria-label="Сменить тему">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 3v2"></path>
+                        <path d="M12 19v2"></path>
+                        <path d="m4.2 4.2 1.4 1.4"></path>
+                        <path d="m18.4 18.4 1.4 1.4"></path>
+                        <path d="M3 12h2"></path>
+                        <path d="M19 12h2"></path>
+                        <path d="m4.2 19.8 1.4-1.4"></path>
+                        <path d="m18.4 5.6 1.4-1.4"></path>
+                        <circle cx="12" cy="12" r="4"></circle>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+
+        <section class="content" id="servicesView">
+
+            <div class="page-heading">
+                <div>
+                    <h1>Услуги</h1>
+                    <p>Список доступных государственных и муниципальных услуг</p>
+                </div>
+                <div class="db-status">Подключено к базе МФЦ</div>
+            </div>
+
+            <div class="filters">
+                <button class="filter" type="button">
+                    Все категории
+                    <svg viewBox="0 0 24 24">
+                        <path d="m7 10 5 5 5-5"></path>
+                    </svg>
+                </button>
+
+                <button class="filter" type="button">
+                    Все статусы
+                    <svg viewBox="0 0 24 24">
+                        <path d="m7 10 5 5 5-5"></path>
+                    </svg>
+                </button>
+
+                <div class="service-search">
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="11" cy="11" r="6"></circle>
+                        <path d="m16 16 5 5"></path>
+                    </svg>
+                    <input id="serviceSearch" type="text" placeholder="Поиск по названию услуги...">
+                </div>
+            </div>
+
+            <div class="services" id="servicesList"></div>
+
+            <div class="empty-view" id="emptyView" hidden>
+                <h3>Раздел пока не подключён</h3>
+                <p>Этот раздел оставлен в интерфейсе для следующего этапа проекта.</p>
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <section class="ai-panel" id="aiPanel">
+
+        <div class="ai-header">
+            <button class="close-ai" id="closeAi" type="button" aria-label="Закрыть">
+                <svg viewBox="0 0 24 24">
+                    <path d="m6 6 12 12"></path>
+                    <path d="m18 6-12 12"></path>
+                </svg>
+            </button>
+
+            <div>
+                <h2>ИИ-агент</h2>
+                <p>Помощник по государственным услугам</p>
+            </div>
+        </div>
+
+        <div class="ai-body" id="aiBody">
+
+            <div class="ai-welcome">
+                <div class="ai-large-image">
+                    <img src="{{ url_for('static', filename='images/ai-bot.png') }}" alt="ИИ-агент">
+                </div>
+
+                <h3>ИИ-агент МФЦ</h3>
+
+                <p>
+                    Найду подходящую услугу и помогу разобраться
+                    с документами, сроками и порядком обращения
+                    на основе данных базы МФЦ.
+                </p>
+            </div>
+
+            <div class="ai-suggestions">
+                <button type="button" data-question="Какие документы нужны для получения паспорта?">
+                    Какие документы нужны для получения паспорта?
+                </button>
+
+                <button type="button" data-question="Как оформить загранпаспорт?">
+                    Как оформить загранпаспорт?
+                </button>
+
+                <button type="button" data-question="Найди услуги по регистрации по месту жительства">
+                    Найти услуги по регистрации
+                </button>
+            </div>
+
+            <div class="chat-messages" id="chatMessages"></div>
+
+        </div>
+
+        <div class="ai-input">
+            <input id="aiInput" type="text" placeholder="Задайте вопрос по услугам МФЦ...">
+
+            <button id="sendAi" type="button" aria-label="Отправить">
+                <svg viewBox="0 0 24 24">
+                    <path d="m5 12 14-7-4 14-3-6z"></path>
+                    <path d="m12 13 7-8"></path>
+                </svg>
+            </button>
+        </div>
+
+    </section>
+
+</div>
+
+
+<script>
+    const body = document.body;
+
+    const servicesList = document.getElementById("servicesList");
+    const serviceSearch = document.getElementById("serviceSearch");
+    const globalSearch = document.getElementById("globalSearch");
+    const emptyView = document.getElementById("emptyView");
+
+    const aiPanel = document.getElementById("aiPanel");
+    const aiInput = document.getElementById("aiInput");
+    const sendAi = document.getElementById("sendAi");
+    const chatMessages = document.getElementById("chatMessages");
+
+    const themeButton = document.getElementById("themeButton");
+    const closeAi = document.getElementById("closeAi");
+    const aiNav = document.getElementById("aiNav");
+    const aiCardButton = document.getElementById("aiCardButton");
+
+    let servicesRequestId = 0;
+
+    function openAi() {
+        aiPanel.classList.add("open");
+        setTimeout(() => aiInput.focus(), 150);
+    }
+
+    function closeAiPanel() {
+        aiPanel.classList.remove("open");
+    }
+
+    aiNav.addEventListener("click", (event) => {
+        event.preventDefault();
+        openAi();
+    });
+
+    aiCardButton.addEventListener("click", openAi);
+    closeAi.addEventListener("click", closeAiPanel);
+
+
+    function setTheme(theme) {
+        body.classList.toggle("light-theme", theme === "light");
+        localStorage.setItem("mfc-theme", theme);
+    }
+
+    setTheme(localStorage.getItem("mfc-theme") || "dark");
+
+    themeButton.addEventListener("click", () => {
+        const nextTheme = body.classList.contains("light-theme") ? "dark" : "light";
+        setTheme(nextTheme);
+    });
+
+
+    function escapeText(value) {
+        return value == null ? "" : String(value);
+    }
+
+    function serviceDescription(service) {
+        if (service.documents) {
+            const text = escapeText(service.documents).replace(/\s+/g, " ").trim();
+            if (text.length > 170) return text.slice(0, 167) + "...";
+            return text;
+        }
+
+        if (service.time) {
+            return "Срок предоставления: " + escapeText(service.time);
+        }
+
+        return "Информация об услуге доступна в базе МФЦ.";
+    }
+
+
+    function renderServices(services) {
+        servicesList.innerHTML = "";
+
+        if (!services.length) {
+            servicesList.innerHTML = `
+                <div class="no-results">
+                    Услуги по вашему запросу не найдены.
+                </div>
+            `;
+            return;
+        }
+
+        services.forEach((service) => {
+            const card = document.createElement("article");
+            card.className = "service-card";
+
+            card.innerHTML = `
+                <div class="service-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M5 3h11l3 3v15H5z"></path>
+                        <path d="M14 3v4h5"></path>
+                        <path d="M8 12h8"></path>
+                        <path d="M8 16h6"></path>
+                    </svg>
+                </div>
+
+                <div class="service-info">
+                    <h3></h3>
+                    <p></p>
+                    <span>Государственная услуга</span>
+                </div>
+
+                <button class="open-service" type="button">Открыть</button>
+                <span class="service-arrow">›</span>
+            `;
+
+            card.querySelector("h3").textContent =
+                service.name || "Без названия";
+
+            card.querySelector("p").textContent =
+                serviceDescription(service);
+
+            card.querySelector(".open-service").addEventListener("click", () => {
+                askAiAboutService(service);
+            });
+
+            servicesList.appendChild(card);
+        });
+    }
+
+
+    async function loadServices(query = "") {
+        const requestId = ++servicesRequestId;
+
+        servicesList.innerHTML = `
+            <div class="loading">
+                Загрузка услуг...
+            </div>
+        `;
+
+        try {
+            const response = await fetch(
+                "/api/services?q=" +
+                encodeURIComponent(query) +
+                "&limit=100"
+            );
+
+            if (!response.ok) {
+                throw new Error("HTTP " + response.status);
+            }
+
+            const services = await response.json();
+
+            if (requestId !== servicesRequestId) {
+                return;
+            }
+
+            renderServices(Array.isArray(services) ? services : []);
+        } catch (error) {
+            console.error("Ошибка загрузки услуг:", error);
+
+            servicesList.innerHTML = `
+                <div class="load-error">
+                    Не удалось загрузить услуги из PostgreSQL.
+                    <small>${escapeText(error.message)}</small>
+                </div>
+            `;
+        }
+    }
+
+
+    function openServiceSearch(query) {
+        serviceSearch.value = query;
+        loadServices(query);
+        window.scrollTo({top: 0, behavior: "smooth"});
+    }
+
+
+    serviceSearch.addEventListener("input", () => {
+        loadServices(serviceSearch.value.trim());
+    });
+
+
+    globalSearch.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+            const value = globalSearch.value.trim();
+
+            if (value) {
+                openServiceSearch(value);
+            }
+        }
+    });
+
+
+    async function askAiAboutService(service) {
+        openAi();
+
+        aiInput.value =
+            "Расскажи подробнее об услуге: " +
+            (service.name || "");
+
+        await sendMessage();
+    }
+
+
+    function addMessage(type, text) {
+        const item = document.createElement("div");
+        item.className = "message " + type;
+
+        const label = type === "user" ? "Вы" : "ИИ-агент";
+
+        item.innerHTML = `
+            <span class="message-label">${label}</span>
+            <div class="message-bubble"></div>
+        `;
+
+        item.querySelector(".message-bubble").textContent = text;
+
+        chatMessages.appendChild(item);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+
+    function addTyping() {
+        const item = document.createElement("div");
+        item.className = "message assistant";
+        item.id = "typingMessage";
+
+        item.innerHTML = `
+            <span class="message-label">ИИ-агент</span>
+            <div class="message-bubble typing">Формирую ответ...</div>
+        `;
+
+        chatMessages.appendChild(item);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+
+    function removeTyping() {
+        document.getElementById("typingMessage")?.remove();
+    }
+
+
+    async function sendMessage() {
+        const text = aiInput.value.trim();
+
+        if (!text || sendAi.disabled) {
+            return;
+        }
+
+        addMessage("user", text);
+
+        aiInput.value = "";
+        sendAi.disabled = true;
+
+        addTyping();
+
+        try {
+            const response = await fetch("/api/chat", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({message: text})
+            });
+
+            const data = await response.json();
+
+            removeTyping();
+
+            if (!response.ok) {
+                throw new Error(
+                    data.details ||
+                    data.error ||
+                    "Ошибка сервера"
+                );
+            }
+
+            addMessage(
+                "assistant",
+                data.answer || "Ответ не получен."
+            );
+
+        } catch (error) {
+            console.error("Ошибка ИИ:", error);
+
+            removeTyping();
+
+            addMessage(
+                "assistant",
+                "Не удалось получить ответ: " + error.message
+            );
+        } finally {
+            sendAi.disabled = false;
+            aiInput.focus();
+        }
+    }
+
+
+    sendAi.addEventListener("click", sendMessage);
+
+    aiInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+            sendMessage();
+        }
+    });
+
+
+    document.querySelectorAll(".ai-suggestions button").forEach((button) => {
+        button.addEventListener("click", () => {
+            aiInput.value = button.dataset.question || button.textContent.trim();
+            aiInput.focus();
+        });
+    });
+
+
+    document.querySelectorAll(".nav-item").forEach((item) => {
+        item.addEventListener("click", (event) => {
+            const view = item.dataset.view;
+
+            if (view === "ai") {
+                return;
+            }
+
+            event.preventDefault();
+
+            document.querySelectorAll(".nav-item").forEach((nav) => {
+                nav.classList.remove("active");
+            });
+
+            item.classList.add("active");
+
+            if (view === "services") {
+                emptyView.hidden = true;
+                servicesList.hidden = false;
+                loadServices(serviceSearch.value.trim());
+                return;
+            }
+
+            if (view === "home") {
+                emptyView.hidden = true;
+                servicesList.hidden = false;
+                serviceSearch.value = "";
+                loadServices();
+                return;
+            }
+
+            emptyView.hidden = false;
+            servicesList.hidden = true;
+        });
+    });
+
+
+    loadServices();
+</script>
+
+</body>
+</html>
