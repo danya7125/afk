@@ -6,8 +6,8 @@ import html as html_lib
 import psycopg
 from psycopg.rows import dict_row
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, jsonify, abort
 
+from flask import Flask, render_template, request, jsonify, abort
 from gigachat import GigaChat
 from gigachat.models import Chat, Messages, MessagesRole
 
@@ -28,7 +28,6 @@ GIGACHAT_SCOPE = os.getenv("GIGACHAT_SCOPE", "GIGACHAT_API_PERS")
 
 
 def get_db():
-    """Создаёт подключение к PostgreSQL."""
     if not PG_PASSWORD:
         raise RuntimeError("Не задан PG_PASSWORD в .env")
 
@@ -45,21 +44,16 @@ def get_db():
 def clean_html(text):
     if not text:
         return ""
-
     text = re.sub(r"<br\s*/?>", "\n", text, flags=re.I)
     text = re.sub(r"</p\s*>", "\n", text, flags=re.I)
     text = re.sub(r"<[^>]+>", " ", text)
     text = html_lib.unescape(text)
-    text = re.sub(r"[ \t]+", " ", text)
+    text = re.sub(r"\s+", " ", text)
     text = re.sub(r"\n\s*\n+", "\n", text)
     return text.strip()
 
 
 def find_services(question, limit=5):
-    """
-    Поиск услуг в PostgreSQL.
-    Используем ILIKE вместо SQLite LIKE.
-    """
     with get_db() as conn:
         rows = conn.execute(
             """
@@ -84,19 +78,14 @@ def find_services(question, limit=5):
 
         words = [
             word
-            for word in re.findall(
-                r"[А-Яа-яЁёA-Za-z0-9]+",
-                question.lower()
-            )
+            for word in re.findall(r"[А-Яа-яЁёA-Za-z0-9]+", question.lower())
             if len(word) >= 4
         ][:8]
 
         if not words:
             return []
 
-        where = " OR ".join(
-            ["service_title_text ILIKE %s"] * len(words)
-        )
+        where = " OR ".join(["service_title_text ILIKE %s"] * len(words))
         params = [f"%{word}%" for word in words]
 
         return conn.execute(
@@ -120,7 +109,6 @@ def find_services(question, limit=5):
 
 def build_context(rows):
     parts = []
-
     for row in rows:
         parts.append(
             "\n".join(
@@ -134,18 +122,14 @@ def build_context(rows):
                 ]
             )
         )
-
     return "\n\n---\n\n".join(parts)
 
 
 def ask_gigachat(question, rows):
     if not GIGACHAT_CREDENTIALS:
-        raise RuntimeError(
-            "Не найден GIGACHAT_CREDENTIALS в файле .env"
-        )
+        raise RuntimeError("Не найден GIGACHAT_CREDENTIALS в файле .env")
 
     context = build_context(rows)
-
     prompt = f"""
 Ты — цифровой помощник МФЦ Тульской области.
 
@@ -191,115 +175,150 @@ def ask_gigachat(question, rows):
 @app.route("/")
 def index():
     with get_db() as conn:
-        groups = conn.execute(
-            """
-            SELECT id, group_key, name
-            FROM classification_groups
-            ORDER BY id
-            """
-        ).fetchall()
-
         services_count = conn.execute(
             "SELECT COUNT(*) AS c FROM services"
         ).fetchone()["c"]
 
-        categories_count = conn.execute(
-            "SELECT COUNT(*) AS c FROM classification_categories"
-        ).fetchone()["c"]
+    categories = [
+        {"id": "documents", "name": "Документы и паспорта"},
+        {"id": "registration", "name": "Регистрация и место жительства"},
+        {"id": "real_estate", "name": "Недвижимость и земля"},
+        {"id": "transport", "name": "Транспорт"},
+        {"id": "social", "name": "Социальные выплаты и льготы"},
+        {"id": "family", "name": "Семья и дети"},
+        {"id": "civil", "name": "ЗАГС"},
+        {"id": "tax", "name": "Налоги"},
+        {"id": "housing", "name": "Жильё и коммунальные услуги"},
+        {"id": "business", "name": "Бизнес и предпринимательство"},
+        {"id": "certificates", "name": "Справки и сведения"},
+        {"id": "other", "name": "Прочие услуги"},
+    ]
 
     return render_template(
         "index.html",
-        groups=groups,
+        categories=categories,
         services_count=services_count,
-        categories_count=categories_count,
+        categories_count=len(categories),
     )
-
 
 @app.get("/api/categories")
 def api_categories():
-    with get_db() as conn:
-        rows = conn.execute(
-            """
-            SELECT
-                cg.id AS group_id,
-                cg.name AS group_name,
-                cc.id AS category_id,
-                cc.source_id,
-                cc.name AS category_name
-            FROM classification_groups cg
-            LEFT JOIN classification_categories cc
-                ON cc.group_id = cg.id
-            ORDER BY cg.id, cc.name
-            """
-        ).fetchall()
-
-    groups = {}
-
-    for row in rows:
-        key = str(row["group_id"])
-
-        if key not in groups:
-            groups[key] = {
-                "id": row["group_id"],
-                "name": row["group_name"],
-                "categories": [],
-            }
-
-        if row["category_id"] is not None:
-            groups[key]["categories"].append(
-                {
-                    "id": row["category_id"],
-                    "source_id": row["source_id"],
-                    "name": row["category_name"],
-                }
-            )
-
-    return jsonify(list(groups.values()))
-
+    return jsonify([
+        {"id": "documents", "name": "Документы и паспорта"},
+        {"id": "registration", "name": "Регистрация и место жительства"},
+        {"id": "real_estate", "name": "Недвижимость и земля"},
+        {"id": "transport", "name": "Транспорт"},
+        {"id": "social", "name": "Социальные выплаты и льготы"},
+        {"id": "family", "name": "Семья и дети"},
+        {"id": "civil", "name": "ЗАГС"},
+        {"id": "tax", "name": "Налоги"},
+        {"id": "housing", "name": "Жильё и коммунальные услуги"},
+        {"id": "business", "name": "Бизнес и предпринимательство"},
+        {"id": "certificates", "name": "Справки и сведения"},
+        {"id": "other", "name": "Прочие услуги"},
+    ])
 
 @app.get("/api/services")
 def api_services():
     query = (request.args.get("q") or "").strip()
+    category = (request.args.get("category") or "").strip()
+    status = (request.args.get("status") or "").strip()
 
     try:
-        limit = int(request.args.get("limit", 50))
+        limit = int(request.args.get("limit", 100))
     except ValueError:
-        limit = 50
+        limit = 100
 
-    limit = min(max(limit, 1), 100)
+    limit = min(max(limit, 1), 1000)
+
+    conditions = []
+    params = []
+
+    if query:
+        conditions.append("s.service_title_text ILIKE %s")
+        params.append(f"%{query}%")
+
+    category_terms = {
+        "documents": ["паспорт", "загранпаспорт", "гражданств", "удостоверен", "миграц"],
+        "registration": ["регистрац", "место жительств", "пребыва", "пропис"],
+        "real_estate": ["недвиж", "квартир", "жилым помещ", "домом", "земель", "земл", "кадастр", "егрн", "имуществен"],
+        "transport": ["автомоб", "транспорт", "тс ", "регистрац.*тс", "водитель", "парков", "прицеп"],
+        "social": ["пенси", "пособ", "льгот", "социальн", "материнск", "инвалид", "компенсац"],
+        "family": ["ребен", "семь", "многодет", "опек", "усынов", "материнск", "алим"],
+        "civil": ["загс", "рождени", "смерт", "брака", "брак", "развод", "отцовств", "имя"],
+        "tax": ["налог", "ндфл", "деклараци", "налогооблож", "фнс", "ип"],
+        "housing": ["жкх", "жилищ", "коммунал", "капитальн ремонт", "субсид", "электроэнерг", "газоснабжен"],
+        "business": ["предприним", "бизнес", "юридическ лиц", "ип ", "лиценз", "разрешен", "торговл"],
+        "certificates": ["справк", "выписк", "сведени", "подтвержден", "документ"],
+    }
+
+    if category and category in category_terms:
+        terms = category_terms[category]
+        term_conditions = []
+        for term in terms:
+            term_conditions.append("COALESCE(s.service_title_text, '') ILIKE %s")
+            params.append(f"%{term}%")
+        conditions.append("(" + " OR ".join(term_conditions) + ")")
+    elif category == "other":
+        known_terms = [
+            t for values in category_terms.values() for t in values
+        ]
+        other_parts = []
+        for term in known_terms:
+            other_parts.append("COALESCE(s.service_title_text, '') NOT ILIKE %s")
+            params.append(f"%{term}%")
+        if other_parts:
+            conditions.append(" AND ".join(other_parts))
+
+    if status == "with_time":
+        conditions.append(
+            """
+            length(
+                btrim(
+                    regexp_replace(COALESCE(s.time_term_text, ''), '<[^>]*>', '', 'g')
+                )
+            ) > 0
+            """
+        )
+    elif status == "with_documents":
+        conditions.append(
+            """
+            length(
+                btrim(
+                    regexp_replace(COALESCE(s.documents_text, ''), '<[^>]*>', '', 'g')
+                )
+            ) > 0
+            """
+        )
+    elif status == "with_payment":
+        conditions.append(
+            """
+            length(
+                btrim(
+                    regexp_replace(COALESCE(s.payment_info_text, ''), '<[^>]*>', '', 'g')
+                )
+            ) > 0
+            """
+        )
+
+    where_sql = "WHERE " + " AND ".join(conditions) if conditions else ""
 
     with get_db() as conn:
-        if query:
-            rows = conn.execute(
-                """
-                SELECT
-                    id,
-                    service_title_text,
-                    payment_info_text,
-                    time_term_text,
-                    documents_text
-                FROM services
-                WHERE service_title_text ILIKE %s
-                ORDER BY service_title_text
-                LIMIT %s
-                """,
-                (f"%{query}%", limit),
-            ).fetchall()
-        else:
-            rows = conn.execute(
-                """
-                SELECT
-                    id,
-                    service_title_text,
-                    payment_info_text,
-                    time_term_text,
-                    documents_text
-                FROM services
-                ORDER BY service_title_text
-                LIMIT %s
-                """,
-                (limit,),
-            ).fetchall()
+        rows = conn.execute(
+            f"""
+            SELECT
+                s.id,
+                s.service_title_text,
+                s.payment_info_text,
+                s.time_term_text,
+                s.documents_text
+            FROM services s
+            {where_sql}
+            ORDER BY s.service_title_text
+            LIMIT %s
+            """,
+            [*params, limit],
+        ).fetchall()
 
     return jsonify(
         [
@@ -350,6 +369,7 @@ def api_service(service_id):
         service[field] = clean_html(service.get(field))
 
     service["classification_refs"] = [dict(ref) for ref in refs]
+
     return jsonify(service)
 
 
@@ -372,7 +392,6 @@ def api_chat():
                 "source": "postgresql",
             }
         )
-
     except Exception as exc:
         print("APP ERROR:", repr(exc))
         return jsonify(
@@ -384,7 +403,6 @@ def api_chat():
 
 
 if __name__ == "__main__":
-    # Проверяем PostgreSQL до запуска Flask.
     try:
         with get_db() as conn:
             conn.execute("SELECT 1")

@@ -176,30 +176,23 @@
                     <h1>Услуги</h1>
                     <p>Список доступных государственных и муниципальных услуг</p>
                 </div>
-                <div class="heading-actions">
-                    <div class="db-status">Подключено к базе МФЦ</div>
-                    <button class="reset-filters" id="resetFilters" type="button">Сбросить фильтры</button>
-                </div>
+                <div class="db-status">Подключено к базе МФЦ</div>
             </div>
 
             <div class="filters">
-                <div class="filter-select-wrap">
-                    <select id="categoryFilter" class="filter-select">
-                        <option value="">Все категории</option>
-                        {% for category in categories %}
-                            <option value="{{ category['id'] }}">{{ category['name'] }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
+                <button class="filter" type="button">
+                    Все категории
+                    <svg viewBox="0 0 24 24">
+                        <path d="m7 10 5 5 5-5"></path>
+                    </svg>
+                </button>
 
-                <div class="filter-select-wrap">
-                    <select id="statusFilter" class="filter-select">
-                        <option value="">Все статусы</option>
-                        <option value="with_time">Есть срок</option>
-                        <option value="with_documents">Есть документы</option>
-                        <option value="with_payment">Есть информация об оплате</option>
-                    </select>
-                </div>
+                <button class="filter" type="button">
+                    Все статусы
+                    <svg viewBox="0 0 24 24">
+                        <path d="m7 10 5 5 5-5"></path>
+                    </svg>
+                </button>
 
                 <div class="service-search">
                     <svg viewBox="0 0 24 24">
@@ -209,8 +202,6 @@
                     <input id="serviceSearch" type="text" placeholder="Поиск по названию услуги...">
                 </div>
             </div>
-
-            <div class="filter-hint">Категории подобраны по типам услуг, с которыми работает сотрудник МФЦ.</div>
 
             <div class="services" id="servicesList"></div>
 
@@ -309,33 +300,6 @@
     const aiCardButton = document.getElementById("aiCardButton");
 
     let servicesRequestId = 0;
-
-    const categoryFilter = document.getElementById("categoryFilter");
-    const statusFilter = document.getElementById("statusFilter");
-    const resetFilters = document.getElementById("resetFilters");
-
-    let selectedCategory = "";
-    let selectedStatus = "";
-
-    resetFilters.addEventListener("click", () => {
-        selectedCategory = "";
-        selectedStatus = "";
-        categoryFilter.value = "";
-        statusFilter.value = "";
-        serviceSearch.value = "";
-        loadServices("");
-    });
-
-    categoryFilter.addEventListener("change", () => {
-        selectedCategory = categoryFilter.value;
-        loadServices(serviceSearch.value.trim());
-    });
-
-    statusFilter.addEventListener("change", () => {
-        selectedStatus = statusFilter.value;
-        loadServices(serviceSearch.value.trim());
-    });
-
 
     function openAi() {
         aiPanel.classList.add("open");
@@ -448,15 +412,11 @@
         `;
 
         try {
-            const params = new URLSearchParams({
-                q: query,
-                limit: "100"
-            });
-
-            if (selectedCategory) params.set("category", selectedCategory);
-            if (selectedStatus) params.set("status", selectedStatus);
-
-            const response = await fetch("/api/services?" + params.toString());
+            const response = await fetch(
+                "/api/services?q=" +
+                encodeURIComponent(query) +
+                "&limit=100"
+            );
 
             if (!response.ok) {
                 throw new Error("HTTP " + response.status);
@@ -464,7 +424,9 @@
 
             const services = await response.json();
 
-            if (requestId !== servicesRequestId) return;
+            if (requestId !== servicesRequestId) {
+                return;
+            }
 
             renderServices(Array.isArray(services) ? services : []);
         } catch (error) {
