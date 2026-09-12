@@ -217,7 +217,6 @@ function renderServices(services) {
         `;
 
         card.querySelector("h3").textContent = service.name || "Без названия";
-        // В карточке показывается именно description_text из PostgreSQL, без участия ИИ.
         card.querySelector("p").textContent = shorten(service.description);
         card.querySelector(".open-service").addEventListener("click", () => openService(service.id));
         card.querySelector(".ai-service-button").addEventListener("click", () => askAiForService(service.id, service.name));
@@ -501,6 +500,11 @@ document.querySelectorAll(".nav-item").forEach((item) => {
         if (view === "services") {
             emptyView.hidden = true;
             servicesList.hidden = false;
+            
+            // ВАЖНО: Показываем кнопку в разделе Услуги
+            const btnRecentUpdates = document.getElementById("btn-recent-updates");
+            if (btnRecentUpdates) btnRecentUpdates.hidden = false;
+
             loadServices(serviceSearch.value.trim());
             return;
         }
@@ -509,16 +513,87 @@ document.querySelectorAll(".nav-item").forEach((item) => {
             emptyView.hidden = true;
             servicesList.hidden = false;
             serviceSearch.value = "";
+            
+            // ВАЖНО: Показываем кнопку в разделе Главная
+            const btnRecentUpdates = document.getElementById("btn-recent-updates");
+            if (btnRecentUpdates) btnRecentUpdates.hidden = false;
+
             restoreUiState();
-loadChatHistory();
-loadServices(serviceSearch.value.trim());
+            loadChatHistory();
+            loadServices(serviceSearch.value.trim());
             return;
         }
 
+        // Для остальных разделов скрываем всё
         emptyView.hidden = false;
         servicesList.hidden = true;
+        
+        const btnRecentUpdates = document.getElementById("btn-recent-updates");
+        const recentUpdatesList = document.getElementById("recent-updates-list");
+        if (btnRecentUpdates) btnRecentUpdates.hidden = true;
+        if (recentUpdatesList) recentUpdatesList.hidden = true;
     });
 });
 
 loadChatHistory();
 loadServices();
+
+// ==========================================
+// ЛОГИКА ДЛЯ КНОПКИ "ПОСЛЕДНИЕ ОБНОВЛЕНИЯ"
+// ==========================================
+const btnRecentUpdates = document.getElementById("btn-recent-updates");
+const recentUpdatesList = document.getElementById("recent-updates-list");
+
+function escapeTextUpdates(value) {
+    return value == null ? "" : String(value);
+}
+
+if (btnRecentUpdates && recentUpdatesList) {
+    btnRecentUpdates.addEventListener("click", async () => {
+        if (!recentUpdatesList.hidden) {
+            recentUpdatesList.hidden = true;
+            return;
+        }
+
+        recentUpdatesList.innerHTML = '<div class="loading">Загрузка обновлений...</div>';
+        recentUpdatesList.hidden = false;
+
+        try {
+            const response = await fetch("/api/recent_updates");
+            if (!response.ok) throw new Error("Ошибка при загрузке");
+            const data = await response.json();
+
+            if (!data || data.length === 0) {
+                recentUpdatesList.innerHTML = '<div class="no-results" style="color: #888; font-size: 14px; padding: 10px;">Недавно измененных услуг пока нет.</div>';
+                return;
+            }
+
+            recentUpdatesList.innerHTML = '<h4 class="updates-title" style="color: inherit; margin-bottom: 10px;">Обновленные регламенты:</h4>';
+            
+            data.forEach(item => {
+                const div = document.createElement("div");
+                div.className = "update-item"; 
+                div.style.padding = "10px";
+                div.style.borderBottom = "1px solid #333";
+                div.style.cursor = "pointer";
+                div.style.display = "flex";
+                div.style.justifyContent = "space-between";
+                
+                div.innerHTML = `
+                    <span style="color: inherit;">${escapeTextUpdates(item.title)}</span> 
+                    <span class="badge-new" style="background-color: #ff4757; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px;">Новое</span>
+                `;
+                
+                div.addEventListener("click", () => {
+                    // Используем функцию askAiForService, так как askAiAboutService в этой версии нет
+                    askAiForService(item.id, item.title);
+                });
+                
+                recentUpdatesList.appendChild(div);
+            });
+        } catch (error) {
+            console.error("Ошибка загрузки обновлений:", error);
+            recentUpdatesList.innerHTML = '<div class="load-error">Ошибка загрузки обновлений.</div>';
+        }
+    });
+}

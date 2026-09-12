@@ -1359,3 +1359,47 @@ body.light-theme .clear-chat {
     border-color: #d3e2ee;
     color: #50738e;
 }
+
+.recent-btn {
+    background-color: #ff6b6b;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 15px;
+    font-weight: 600;
+    font-family: inherit;
+    font-size: 14px;
+    transition: background-color 0.2s;
+    display: inline-block;
+}
+.recent-btn:hover {
+    background-color: #fa5252;
+}
+.badge-new {
+    background-color: #ff4757;
+    color: white;
+    font-size: 10px;
+    padding: 3px 6px;
+    border-radius: 10px;
+    margin-left: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+.update-item {
+    padding: 12px;
+    border-bottom: 1px solid var(--border-color, #eee);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+        }
+.update-item:hover {
+    background-color: rgba(150, 150, 150, 0.1);
+}
+.update-item:last-child {
+    border-bottom: none;
+}

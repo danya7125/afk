@@ -173,14 +173,22 @@
 
             <div class="page-heading">
                 <div>
-                    <h1>Услуги</h1>
-                    <p>Список доступных государственных и муниципальных услуг</p>
+                    <h1 id="pageTitle">Услуги</h1>
+                    <p id="pageSubtitle">Список доступных государственных и муниципальных услуг</p>
                 </div>
                 <div class="heading-actions">
                     <div class="db-status">Подключено к базе МФЦ</div>
                     <button class="reset-filters" id="resetFilters" type="button">Сбросить фильтры</button>
                 </div>
             </div>
+
+           
+            <button id="btn-recent-updates" class="recent-btn" type="button">
+                Последние обновления
+            </button>
+            
+            <div id="recent-updates-list" class="updates-container" hidden></div>
+           
 
             <div class="filters">
                 <div class="filter-select-wrap">
@@ -289,8 +297,6 @@
     </section>
 
 </div>
-
-
 
 <div class="service-modal" id="serviceModal" hidden>
     <button class="service-modal-backdrop" id="serviceModalBackdrop" type="button" aria-label="Закрыть карточку услуги"></button>
