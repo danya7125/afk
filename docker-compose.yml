@@ -4,7 +4,7 @@ services:
     container_name: mfc_postgres
 
     environment:
-      POSTGRES_DB: mfc
+      POSTGRES_DB: mfc_data
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
 
@@ -13,10 +13,10 @@ services:
       - ./docker/db:/docker-entrypoint-initdb.d:ro
 
     ports:
-      - "5432:5432"
+      - "5433:5432"
 
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d mfc"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d mfc_data"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -35,7 +35,7 @@ services:
     environment:
       PG_HOST: db
       PG_PORT: 5432
-      PG_DATABASE: mfc
+      PG_DATABASE: mfc_data
       PG_USER: postgres
       PG_PASSWORD: postgres
 
