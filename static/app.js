@@ -2,7 +2,6 @@ const body = document.body;
 
 const servicesList = document.getElementById("servicesList");
 const serviceSearch = document.getElementById("serviceSearch");
-const globalSearch = document.getElementById("globalSearch");
 const emptyView = document.getElementById("emptyView");
 
 const aiPanel = document.getElementById("aiPanel");
@@ -339,13 +338,6 @@ statusFilter.addEventListener("change", () => {
 serviceSearch.addEventListener("input", () => {
     clearTimeout(searchTimer);
     searchTimer = setTimeout(() => loadServices(serviceSearch.value.trim()), 250);
-});
-
-globalSearch.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-        const value = globalSearch.value.trim();
-        if (value) openServiceSearch(value);
-    }
 });
 
 function addMessage(type, text, sources = [], options = []) {

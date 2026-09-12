@@ -146,7 +146,6 @@ button {
 
 .nav-icon svg,
 .filter svg,
-.search-top svg,
 .service-search svg,
 .icon-btn svg,
 .close-ai svg,
@@ -270,43 +269,17 @@ button {
 }
 
 .topbar {
-    height: 76px;
+    height: 58px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: 20px;
     padding: 0 28px;
     border-bottom: 1px solid var(--border);
     background: rgba(28, 21, 14, .92);
 }
 
-.search-top {
-    width: 470px;
-    height: 42px;
-    display: flex;
-    align-items: center;
-    padding: 0 13px;
-    border: 1px solid #5c4834;
-    border-radius: 9px;
-    background: rgba(41, 31, 20, .8);
-}
 
-.search-top svg {
-    width: 18px;
-    color: #aa9a88;
-}
-
-.search-top input {
-    flex: 1;
-    margin-left: 10px;
-    border: 0;
-    outline: 0;
-    background: transparent;
-    color: white;
-    font-size: 12px;
-}
-
-.search-top input::placeholder,
 .service-search input::placeholder {
     color: #a29384;
 }
@@ -834,15 +807,6 @@ body.light-theme .topbar {
     border-bottom-color: #f3ece5;
 }
 
-body.light-theme .search-top {
-    background: white;
-    border-color: #eae0d6;
-}
-
-body.light-theme .search-top input {
-    color: #5c4832;
-}
-
 body.light-theme .icon-btn {
     background: white;
     border-color: #eae0d6;
@@ -975,9 +939,6 @@ body.light-theme .ai-input input {
         padding: 26px 22px 50px;
     }
 
-    .search-top {
-        width: 370px;
-    }
 }
 
 @media (max-width: 800px) {
@@ -1021,9 +982,6 @@ body.light-theme .ai-input input {
         padding: 0 16px;
     }
 
-    .search-top {
-        width: 100%;
-    }
 
     .content {
         padding: 20px 14px 40px;
@@ -1364,21 +1322,20 @@ body.light-theme .clear-chat {
     position: relative;
     display: inline-flex;
     align-items: center;
-    gap: 9px;
-    min-height: 40px;
-    margin: 2px 0 18px;
-    padding: 9px 15px 9px 13px;
-    border: 1px solid rgba(201, 131, 63, 0.58);
-    border-radius: 10px;
-    background: linear-gradient(180deg, rgba(201, 131, 63, 0.18), rgba(201, 131, 63, 0.10));
+    gap: 8px;
+    min-height: 38px;
+    margin: 4px 0 18px;
+    padding: 8px 13px 8px 10px;
+    border: 1px solid #6b4b2e;
+    border-radius: 9px;
+    background: #2b2117;
     color: #e5b989;
-    box-shadow: 0 5px 18px rgba(118, 76, 37, 0.12);
+    box-shadow: none;
     cursor: pointer;
     font-weight: 600;
     font-family: inherit;
-    font-size: 13px;
-    letter-spacing: .1px;
-    transition: background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease, box-shadow .18s ease;
+    font-size: 12px;
+    transition: background .15s ease, border-color .15s ease, color .15s ease;
 }
 
 .recent-btn::before {
@@ -1388,41 +1345,38 @@ body.light-theme .clear-chat {
     justify-content: center;
     width: 22px;
     height: 22px;
-    border-radius: 7px;
-    background: rgba(201, 131, 63, 0.14);
+    border-radius: 6px;
+    background: rgba(201, 131, 63, 0.12);
     color: #d79a5c;
-    font-size: 16px;
+    font-size: 15px;
     line-height: 1;
 }
 
 .recent-btn:hover {
-    background: linear-gradient(180deg, rgba(201, 131, 63, 0.24), rgba(201, 131, 63, 0.14));
-    border-color: rgba(218, 157, 91, 0.78);
+    background: #342618;
+    border-color: #8a6038;
     color: #f0c79d;
-    box-shadow: 0 7px 22px rgba(118, 76, 37, 0.18);
-    transform: translateY(-1px);
 }
 
 .recent-btn:active {
-    transform: translateY(0);
+    background: #2f2318;
 }
 
-
 body.light-theme .recent-btn {
-    border-color: rgba(180, 112, 55, 0.44);
-    background: linear-gradient(180deg, rgba(201, 131, 63, 0.12), rgba(201, 131, 63, 0.07));
+    border-color: #dbc7b3;
+    background: #fffaf4;
     color: #9a6335;
-    box-shadow: 0 4px 14px rgba(125, 83, 42, 0.08);
+    box-shadow: none;
 }
 
 body.light-theme .recent-btn::before {
-    background: rgba(201, 131, 63, 0.10);
+    background: #f8eadb;
     color: #b8773a;
 }
 
 body.light-theme .recent-btn:hover {
-    border-color: rgba(180, 112, 55, 0.66);
-    background: linear-gradient(180deg, rgba(201, 131, 63, 0.18), rgba(201, 131, 63, 0.10));
+    border-color: #cda985;
+    background: #fff6ed;
     color: #835027;
 }
 
