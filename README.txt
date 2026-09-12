@@ -1,106 +1,292 @@
-# МФЦ: Flask + PostgreSQL + GigaChat
+# Первоначальная настройка проекта МФЦ
 
-Проект разделён на слои, чтобы UI, SQL и ИИ-логика не находились в одном app.py.
+Веб-приложение для поиска информации о услугах для сотрудников.
 
-## Структура
+## Техно-стек
 
-app.py                         — только запуск приложения
-mfc_app/__init__.py            — Flask application factory
-mfc_app/config.py              — конфигурация из .env
-mfc_app/db.py                  — подключение к PostgreSQL
-mfc_app/models.py              — модель Service
-mfc_app/catalog.py             — категории интерфейса
-mfc_app/routes/web.py          — HTML-страницы
-mfc_app/routes/api.py          — JSON API
-mfc_app/repositories/services.py — SQL и чтение services
-mfc_app/services/search.py     — нормализация/поиск терминов
-mfc_app/services/ai.py         — RAG-контекст + GigaChat
-mfc_app/utils/text.py          — очистка HTML из БД
-static/app.js                  — frontend-логика
-static/style.css               — стили
-templates/index.html           — HTML-шаблон
-mfc_data.dump                  — PostgreSQL dump
+* **Backend:** Python 3.12, Flask
+* **База данных:** PostgreSQL
+* **ИИ-ассистент:** GigaChat API
+* **Контейнеризация:** Docker, Docker Compose
+* **Frontend:** HTML, CSS, JavaScript
 
-## Важное изменение
+## Требования
 
-Карточки услуг и кнопка «Открыть» больше НЕ используют ИИ.
+Для запуска проекта необходимо установить:
 
-- список услуг получает description_text прямо из PostgreSQL;
-- /api/services отдаёт только id, name и description;
-- /api/services/<id> отдаёт полные данные выбранной услуги из PostgreSQL;
-- GigaChat используется только в отдельном ИИ-помощнике /api/chat.
+* Git
+* Docker
+* Docker Compose
 
-## 1. Установка
+При запуске проекта через Docker отдельно устанавливать Python и PostgreSQL не требуется.
 
-python -m pip install -r requirements.txt
+---
 
-## 2. PostgreSQL
+## 1. Клонирование репозитория
 
-Создайте базу:
+Клонируйте репозиторий проекта:
 
-CREATE DATABASE mfc_data;
-
-Восстановите dump (пример для Windows / PowerShell):
-
-& "C:\Program Files\PostgreSQL\18\bin\pg_restore.exe" -U postgres -h 127.0.0.1 -p 5432 -d mfc_data mfc_data.dump
-
-Если PostgreSQL установлен в другой папке, укажите свой путь к pg_restore.exe.
-
-## 3. .env
-
-Скопируйте .env.example в .env и заполните минимум:
-
-PG_PASSWORD=ваш_пароль
-GIGACHAT_CREDENTIALS=ваш_authorization_key
-
-.env не коммитьте в Git.
-
-## 4. Запуск
-
-python app.py
-
-После успешной проверки PostgreSQL:
-
-PostgreSQL: подключение успешно
-
-Откройте:
-http://127.0.0.1:5000
-
-## Что исправлено
-
-- app.py разбит на маршруты, сервисы, репозиторий, модель и DB/config;
-- убран ИИ из обычного просмотра услуг;
-- description карточки берётся из services.description_text;
-- полная услуга загружается из PostgreSQL только при открытии карточки;
-- category/status фильтры теперь реально обрабатываются backend-ом;
-- поиск ИИ отделён от SQL и ранжирует кандидатов до вызова LLM;
-- если подходящая услуга не найдена, LLM вообще не вызывается;
-- system prompt отделён от user prompt;
-- ошибки сервера больше не отправляют внутренний exception пользователю;
-- добавлен лимит длины сообщения;
-- JavaScript вынесен из index.html в static/app.js;
-- убраны дубли templates/templates и templates/static.
-
-## Следующий production-этап
-
-Для публичного сервиса стоит добавить connection pool, миграции (Alembic), rate limiting, auth/roles,
-логирование/метрики, тесты API, PostgreSQL full-text search/pg_trgm или embeddings + pgvector,
-а категории услуг хранить в БД явно, а не определять ключевыми словами.
-
-## Docker и история чатов
-
-При запуске через `docker compose` используется PostgreSQL-контейнер `mfc_postgres` и база `mfc`.
-Основной dump восстанавливается из `docker/db/mfc_data.dump`, после чего `docker/db/02-chat-history.sql` создаёт таблицу `public.chat_history`.
-Приложение дополнительно проверяет наличие таблицы при старте.
-
-Для проверки истории в pgAdmin нужно подключаться к тому же Docker PostgreSQL на `127.0.0.1:5432` и открывать базу `mfc`, а не отдельную локальную базу `mfc_data`.
-Проверка:
-
-```sql
-SELECT id, category_name, service_name, user_message, ai_response, created_at
-FROM public.chat_history
-ORDER BY created_at DESC;
+```bash
+git clone https://github.com/danya7125/afk
+cd afk
 ```
 
-После каждого успешного запроса Flask также пишет в консоль:
-`CHAT SAVED id=... session=... category=... service=...`
+---
+
+## 2. Создание `.env`
+
+Файл `.env` содержит настройки приложения, параметры подключения к PostgreSQL и данные для работы с GigaChat API.
+
+В проекте присутствует `.env.example`, создайте на его основе `.env`:
+
+### Linux / macOS
+
+```bash
+cp .env.example .env
+```
+
+### Windows PowerShell
+
+```powershell
+Copy-Item .env.example .env
+```
+
+После этого откройте `.env` и заполните необходимые значения.
+
+Пример:
+
+```env
+PG_HOST=db
+PG_PORT=5432
+PG_DATABASE=mfc_data
+PG_USER=postgres
+PG_PASSWORD=your_password
+
+GIGACHAT_CREDENTIALS=your_gigachat_credentials
+```
+
+### Переменные окружения
+
+| Переменная               | Назначение                                                                       |
+| ------------------------ | -------------------------------------------------------------------------------- |
+| **PG_HOST**              | Адрес PostgreSQL. При запуске через Docker Compose используется имя сервиса `db` |
+| **PG_PORT**              | Внутренний порт PostgreSQL, по умолчанию `5432`                                  |
+| **PG_DATABASE**          | Название базы данных                                                             |
+| **PG_USER**              | Пользователь PostgreSQL                                                          |
+| **PG_PASSWORD**          | Пароль пользователя PostgreSQL                                                   |
+| **GIGACHAT_CREDENTIALS** | Данные авторизации для использования GigaChat API                                |
+
+> **Важно:** при запуске всего проекта через Docker в `PG_HOST` необходимо использовать `db`, а не `localhost`, поскольку backend и PostgreSQL находятся в разных контейнерах.
+
+---
+
+## 3. Сборка и запуск Docker
+
+Проект использует Docker Compose для одновременного запуска backend-приложения и PostgreSQL.
+
+Находясь в корневой папке проекта, выполните:
+
+```bash
+docker compose up -d --build
+```
+
+Параметр `--build` собирает образ backend-приложения, а `-d` запускает контейнеры в фоновом режиме.
+
+Проверить состояние контейнеров можно командой:
+
+```bash
+docker compose ps
+```
+
+После успешного запуска должны работать контейнеры:
+
+```text
+mfc_backend
+mfc_postgres
+```
+
+---
+
+## 4. Инициализация PostgreSQL
+
+PostgreSQL запускается автоматически внутри Docker-контейнера.
+
+При первом запуске проекта создаётся база:
+
+```text
+mfc_data
+```
+
+Начальные данные восстанавливаются из дампа базы данных:
+
+```text
+docker/db/mfc_data.dump
+```
+
+Скрипт первоначального восстановления:
+
+```text
+docker/db/01-restore.sh
+```
+
+Запускается автоматически при первой инициализации PostgreSQL.
+
+Проверить наличие базы можно командой:
+
+```bash
+docker exec -it mfc_postgres psql -U postgres -l
+```
+
+Проверить таблицы:
+
+```bash
+docker exec -it mfc_postgres psql -U postgres -d mfc_data -c "\dt"
+```
+
+Например, проверить количество услуг:
+
+```bash
+docker exec -it mfc_postgres psql -U postgres -d mfc_data -c "SELECT COUNT(*) FROM services;"
+```
+
+---
+
+## 5. Работа с данными PostgreSQL
+
+Данные PostgreSQL хранятся в Docker Volume.
+
+Поэтому при обычной остановке проекта:
+
+```bash
+docker compose down
+```
+
+данные базы **не удаляются**.
+
+После повторного запуска:
+
+```bash
+docker compose up -d
+```
+
+PostgreSQL продолжит использовать ранее сохранённые данные.
+
+Также можно просто остановить контейнеры:
+
+```bash
+docker compose stop
+```
+
+и снова запустить:
+
+```bash
+docker compose start
+```
+
+> **Внимание:** команда
+
+```bash
+docker compose down -v
+```
+
+удаляет Docker Volume PostgreSQL.
+
+В этом случае сохранённые данные базы будут удалены, а при следующем запуске PostgreSQL создаст базу заново и выполнит первоначальную инициализацию из `mfc_data.dump`.
+
+---
+
+## 6. Запуск приложения
+
+При использовании Docker Compose отдельно запускать Flask не требуется.
+
+Backend запускается автоматически внутри контейнера:
+
+```text
+mfc_backend
+```
+
+После запуска Docker приложение доступно в браузере по адресу:
+
+```text
+http://localhost:5000
+```
+
+---
+
+## 7. Просмотр логов
+
+Посмотреть логи всего проекта:
+
+```bash
+docker compose logs
+```
+
+Следить за логами в реальном времени:
+
+```bash
+docker compose logs -f
+```
+
+Логи backend:
+
+```bash
+docker compose logs web --tail=100
+```
+
+Логи PostgreSQL:
+
+```bash
+docker compose logs db --tail=100
+```
+
+Это может быть полезно при диагностике ошибок подключения к PostgreSQL или GigaChat API.
+
+---
+
+## 8. GigaChat API
+
+Для работы ИИ-ассистента необходимо указать действительные данные авторизации GigaChat в `.env`:
+
+```env
+GIGACHAT_CREDENTIALS=your_gigachat_credentials
+```
+
+Backend использует GigaChat API для формирования ответов пользователю на основе информации об услугах.
+
+Если GigaChat недоступен или возникает ошибка соединения, основная база данных и каталог услуг могут продолжать работать, однако функции ИИ-ассистента могут быть временно недоступны.
+
+---
+
+## 9. Остановка проекта
+
+Для обычной остановки:
+
+```bash
+docker compose down
+```
+
+Для последующего запуска:
+
+```bash
+docker compose up -d
+```
+
+Если код проекта или Dockerfile был изменён:
+
+```bash
+docker compose up -d --build
+```
+
+---
+
+Таким образом, для стандартного запуска проекта достаточно:
+
+```bash
+docker compose up -d --build
+```
+
+После чего открыть:
+
+```text
+http://localhost:5000
+```
