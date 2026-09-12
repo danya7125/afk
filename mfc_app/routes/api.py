@@ -1,6 +1,9 @@
 import logging
 import uuid
 
+import os
+import psycopg
+
 from flask import Blueprint, current_app, jsonify, request, make_response
 
 from ..catalog import CATEGORIES, CATEGORY_NAMES, detect_service_category
@@ -184,3 +187,32 @@ def chat():
         return _finish_response({
             "error": "Не удалось получить ответ ИИ. Проверьте настройки сервиса и повторите запрос."
         }, session_id), 500
+
+@api_bp.get("/recent_updates")
+def recent_updates():
+    PG_HOST = os.getenv("PG_HOST", "127.0.0.1")
+    PG_PORT = os.getenv("PG_PORT", "5432")
+    PG_DATABASE = os.getenv("PG_DATABASE", "mfc_data")
+    PG_USER = os.getenv("PG_USER", "postgres")
+    PG_PASSWORD = os.getenv("PG_PASSWORD")
+
+    try:
+        with psycopg.connect(
+            host=PG_HOST, port=PG_PORT, dbname=PG_DATABASE, 
+            user=PG_USER, password=PG_PASSWORD
+        ) as conn:
+            
+           result = conn.execute("""
+                SELECT id, service_title_text 
+                FROM services 
+                WHERE xmin::text::bigint = (
+                    SELECT MAX(xmin::text::bigint) FROM services
+                )
+            """).fetchall()
+
+           updates = [{"id": row[0], "title": row[1]} for row in result]
+            
+        return jsonify(updates)
+    except Exception as e:
+        logger.exception("Ошибка при получении последних обновлений")
+        return jsonify({"error": str(e)}), 500
