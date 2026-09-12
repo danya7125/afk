@@ -5,8 +5,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-PG_HOST = os.getenv("PG_HOST", "127.0.0.1")
-PG_PORT = os.getenv("PG_PORT", "5432")
+PG_HOST = os.getenv("SYNC_PG_HOST", "127.0.0.1")
+PG_PORT = os.getenv("SYNC_PG_PORT", "5433")
 PG_DATABASE = os.getenv("PG_DATABASE", "mfc_data")
 PG_USER = os.getenv("PG_USER", "postgres")
 PG_PASSWORD = os.getenv("PG_PASSWORD")
