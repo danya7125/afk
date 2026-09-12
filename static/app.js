@@ -597,7 +597,7 @@ if (btnRecentUpdates && recentUpdatesList) {
             const data = await response.json();
 
             if (!data || data.length === 0) {
-                recentUpdatesList.innerHTML = '<div class="no-results" style="color: #888; font-size: 14px; padding: 10px;">Недавно измененных услуг пока нет.</div>';
+                recentUpdatesList.innerHTML = '<div class="no-results" style="color: var(--muted); font-size: 14px; padding: 10px;">Недавно измененных услуг пока нет.</div>';
                 return;
             }
 
@@ -607,14 +607,14 @@ if (btnRecentUpdates && recentUpdatesList) {
                 const div = document.createElement("div");
                 div.className = "update-item"; 
                 div.style.padding = "10px";
-                div.style.borderBottom = "1px solid #333";
+                div.style.borderBottom = "1px solid var(--border)";
                 div.style.cursor = "pointer";
                 div.style.display = "flex";
                 div.style.justifyContent = "space-between";
                 
                 div.innerHTML = `
                     <span style="color: inherit;">${escapeTextUpdates(item.title)}</span> 
-                    <span class="badge-new" style="background-color: #ff4757; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px;">Новое</span>
+                    <span class="badge-new" style="background-color: var(--md-red); color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px;">Новое</span>
                 `;
                 
                 div.addEventListener("click", () => {

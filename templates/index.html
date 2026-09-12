@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>МФЦ — Государственные и муниципальные услуги</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -13,11 +16,8 @@
     <aside class="sidebar" id="sidebar">
 
         <div class="brand">
-            <div class="brand-logo"><span></span></div>
-
-            <div class="brand-text">
-                <strong>МФЦ</strong>
-                <small>Государственные<br>и муниципальные услуги</small>
+            <div class="brand-logo">
+                <img src="{{ url_for('static', filename='images/logo-lg.svg') }}" alt="Мои Документы">
             </div>
         </div>
 
@@ -116,7 +116,7 @@
                 <div class="heading-actions">
                     <div class="db-status">Подключено к базе МФЦ</div>
                     <input type="file" id="json-upload" accept=".json" style="display: none;">
-                    <button class="reset-filters" id="btn-sync-data" type="button" style="background: #2b5278; border-color: #3b70a1; color: white;">
+                    <button class="reset-filters" id="btn-sync-data" type="button">
                         Обновить базу
                     </button>
                     <button class="reset-filters" id="resetFilters" type="button">Сбросить фильтры</button>
