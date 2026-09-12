@@ -117,6 +117,18 @@ button {
     object-fit: contain;
 }
 
+.brand-logo-light {
+    display: none !important;
+}
+
+body.light-theme .brand-logo-dark {
+    display: none !important;
+}
+
+body.light-theme .brand-logo-light {
+    display: block !important;
+}
+
 .sidebar-nav {
     margin-top: 18px;
     display: flex;
