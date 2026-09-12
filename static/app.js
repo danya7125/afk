@@ -31,38 +31,62 @@ let selectedCategory = "";
 let selectedStatus = "";
 let searchTimer = null;
 
-const CHAT_STORAGE_KEY = "mfc-chat-history-v2";
 const UI_STORAGE_KEY = "mfc-ui-state-v2";
-const MAX_SAVED_MESSAGES = 60;
+const SESSION_STORAGE_KEY = "mfc-session-id-v1";
+const MAX_HISTORY_ITEMS = 100;
 
-function saveChat() {
-    const messages = [...chatMessages.querySelectorAll(".message")].map((item) => ({
-        type: item.classList.contains("user") ? "user" : "assistant",
-        text: item.querySelector(".message-bubble")?.textContent || "",
-    })).filter((item) => item.text);
-
-    localStorage.setItem(
-        CHAT_STORAGE_KEY,
-        JSON.stringify(messages.slice(-MAX_SAVED_MESSAGES))
-    );
+function getSessionId() {
+    let value = localStorage.getItem(SESSION_STORAGE_KEY);
+    if (!value) {
+        value = crypto.randomUUID();
+        localStorage.setItem(SESSION_STORAGE_KEY, value);
+    }
+    return value;
 }
 
-function restoreChat() {
+function apiHeaders(extra = {}) {
+    return {
+        ...extra,
+        "X-MFC-Session-ID": getSessionId(),
+    };
+}
+
+function clearRenderedChat() {
+    chatMessages.innerHTML = "";
+}
+
+async function loadChatHistory() {
     try {
-        const raw = localStorage.getItem(CHAT_STORAGE_KEY);
-        if (!raw) return;
+        const params = new URLSearchParams({limit: String(MAX_HISTORY_ITEMS)});
+        const response = await fetch("/api/chat/history?" + params.toString(), {
+            headers: apiHeaders(),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Не удалось получить историю");
 
-        const messages = JSON.parse(raw);
-        if (!Array.isArray(messages)) return;
+        if (data.session_id) {
+            localStorage.setItem(SESSION_STORAGE_KEY, data.session_id);
+        }
 
-        messages.forEach((message) => {
-            if (!message || !message.text) return;
-            addMessage(message.type === "user" ? "user" : "assistant", message.text);
+        clearRenderedChat();
+        (Array.isArray(data.items) ? data.items : []).forEach((item) => {
+            if (!item) return;
+            if (item.user_message) {
+                addMessage("user", item.user_message);
+            }
+            if (item.ai_response) {
+                addMessage(
+                    "assistant",
+                    item.ai_response,
+                    Array.isArray(item.matched_services) ? item.matched_services : []
+                );
+            }
         });
     } catch (error) {
-        console.warn("Не удалось восстановить историю чата:", error);
+        console.warn("Не удалось загрузить историю чата из PostgreSQL:", error);
     }
 }
+
 
 function saveUiState() {
     localStorage.setItem(
@@ -123,9 +147,20 @@ aiNav.addEventListener("click", (event) => {
 
 aiCardButton.addEventListener("click", openAi);
 
-clearChat.addEventListener("click", () => {
-    chatMessages.innerHTML = "";
-    localStorage.removeItem(CHAT_STORAGE_KEY);
+clearChat.addEventListener("click", async () => {
+    try {
+        const response = await fetch("/api/chat/history", {
+            method: "DELETE",
+            headers: apiHeaders(),
+        });
+        if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+            throw new Error(data.error || "Не удалось очистить историю");
+        }
+        clearRenderedChat();
+    } catch (error) {
+        console.error("Ошибка очистки истории:", error);
+    }
 });
 closeAi.addEventListener("click", closeAiPanel);
 
@@ -377,8 +412,11 @@ async function askAiForService(serviceId, serviceName) {
             "/api/chat/service/" + encodeURIComponent(serviceId),
             {
                 method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({message: question})
+                headers: apiHeaders({"Content-Type": "application/json"}),
+                body: JSON.stringify({
+                    message: question,
+                    category: selectedCategory,
+                })
             }
         );
 
@@ -389,14 +427,15 @@ async function askAiForService(serviceId, serviceName) {
             throw new Error(data.error || "Ошибка сервера");
         }
 
-        addMessage("assistant", data.answer || "Ответ не получен.");
-        saveChat();
+        addMessage(
+            "assistant",
+            data.answer || "Ответ не получен.",
+            data.service ? [data.service] : []
+        );
     } catch (error) {
         console.error("Ошибка ИИ услуги:", error);
         removeTyping();
         addMessage("assistant", "Не удалось получить ответ: " + error.message);
-        saveChat();
-        saveChat();
     } finally {
         sendAi.disabled = false;
         aiInput.focus();
@@ -415,14 +454,16 @@ async function sendMessage() {
     try {
         const response = await fetch("/api/chat", {
             method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({message: text}),
+            headers: apiHeaders({"Content-Type": "application/json"}),
+            body: JSON.stringify({
+                message: text,
+                category: selectedCategory,
+            }),
         });
         const data = await response.json();
         removeTyping();
         if (!response.ok) throw new Error(data.error || "Ошибка сервера");
         addMessage("assistant", data.answer || "Ответ не получен.", data.matched || []);
-        saveChat();
     } catch (error) {
         console.error("Ошибка ИИ:", error);
         removeTyping();
@@ -469,7 +510,7 @@ document.querySelectorAll(".nav-item").forEach((item) => {
             servicesList.hidden = false;
             serviceSearch.value = "";
             restoreUiState();
-restoreChat();
+loadChatHistory();
 loadServices(serviceSearch.value.trim());
             return;
         }
@@ -479,4 +520,5 @@ loadServices(serviceSearch.value.trim());
     });
 });
 
+loadChatHistory();
 loadServices();

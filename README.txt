@@ -86,3 +86,21 @@ http://127.0.0.1:5000
 Для публичного сервиса стоит добавить connection pool, миграции (Alembic), rate limiting, auth/roles,
 логирование/метрики, тесты API, PostgreSQL full-text search/pg_trgm или embeddings + pgvector,
 а категории услуг хранить в БД явно, а не определять ключевыми словами.
+
+## Docker и история чатов
+
+При запуске через `docker compose` используется PostgreSQL-контейнер `mfc_postgres` и база `mfc`.
+Основной dump восстанавливается из `docker/db/mfc_data.dump`, после чего `docker/db/02-chat-history.sql` создаёт таблицу `public.chat_history`.
+Приложение дополнительно проверяет наличие таблицы при старте.
+
+Для проверки истории в pgAdmin нужно подключаться к тому же Docker PostgreSQL на `127.0.0.1:5432` и открывать базу `mfc`, а не отдельную локальную базу `mfc_data`.
+Проверка:
+
+```sql
+SELECT id, category_name, service_name, user_message, ai_response, created_at
+FROM public.chat_history
+ORDER BY created_at DESC;
+```
+
+После каждого успешного запроса Flask также пишет в консоль:
+`CHAT SAVED id=... session=... category=... service=...`

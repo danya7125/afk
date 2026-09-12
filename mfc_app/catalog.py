@@ -52,3 +52,22 @@ CATEGORY_KEYWORDS: dict[str, tuple[str, ...]] = {
         "справк", "сведени", "выписк", "информац",
     ),
 }
+
+
+CATEGORY_NAMES: dict[str, str] = {item["id"]: item["name"] for item in CATEGORIES}
+
+
+def detect_service_category(service) -> str:
+    """Детерминированно определяет интерфейсную категорию услуги."""
+    text = " ".join(
+        [
+            str(getattr(service, "name", "") or ""),
+            str(getattr(service, "description", "") or ""),
+        ]
+    ).lower()
+
+    for category_id, keywords in CATEGORY_KEYWORDS.items():
+        if any(keyword.lower() in text for keyword in keywords):
+            return category_id
+
+    return "other"

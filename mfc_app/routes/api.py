@@ -1,13 +1,30 @@
 import logging
+import uuid
 
-from flask import Blueprint, current_app, jsonify, request
+from flask import Blueprint, current_app, jsonify, request, make_response
 
-from ..catalog import CATEGORIES
+from ..catalog import CATEGORIES, CATEGORY_NAMES, detect_service_category
+from ..repositories.chat_history import ChatHistoryRepository
 from ..repositories.services import ServiceRepository
 from ..services.ai import AiAssistantService
 
 logger = logging.getLogger(__name__)
 api_bp = Blueprint("api", __name__)
+chat_history = ChatHistoryRepository()
+
+
+def _session_id() -> str:
+    value = (request.headers.get("X-MFC-Session-ID") or "").strip()
+    try:
+        return str(uuid.UUID(value))
+    except (ValueError, AttributeError):
+        return str(uuid.uuid4())
+
+
+def _finish_response(payload: dict, session_id: str):
+    response = make_response(jsonify(payload))
+    response.headers["X-MFC-Session-ID"] = session_id
+    return response
 
 
 @api_bp.get("/categories")
@@ -28,12 +45,7 @@ def services():
     limit = min(max(limit, 1), 500)
 
     repository = ServiceRepository()
-    rows = repository.list(
-        query=query,
-        category=category,
-        status=status,
-        limit=limit,
-    )
+    rows = repository.list(query=query, category=category, status=status, limit=limit)
     return jsonify([service.to_summary_dict() for service in rows])
 
 
@@ -45,58 +57,130 @@ def service_details(service_id: str):
     return jsonify(service.to_dict())
 
 
+@api_bp.get("/chat/history")
+def chat_history_list():
+    session_id = _session_id()
+    category_id = (request.args.get("category") or "").strip()
+
+    try:
+        limit = int(request.args.get("limit", 100))
+    except (TypeError, ValueError):
+        limit = 100
+    limit = min(max(limit, 1), 200)
+
+    rows = chat_history.list_for_session(session_id, category_id=category_id, limit=limit)
+    return _finish_response({"session_id": session_id, "items": rows}, session_id)
+
+
+@api_bp.delete("/chat/history")
+def chat_history_clear():
+    session_id = _session_id()
+    category_id = (request.args.get("category") or "").strip()
+    chat_history.clear_session(session_id, category_id=category_id)
+    return _finish_response({"ok": True, "session_id": session_id}, session_id)
+
+
 @api_bp.post("/chat/service/<service_id>")
 def chat_service(service_id: str):
     payload = request.get_json(silent=True) or {}
     question = (payload.get("message") or "").strip()
+    requested_category = (payload.get("category") or "").strip()
+    session_id = _session_id()
 
     if not question:
         question = "Объясни эту услугу простыми словами."
 
     max_chars = current_app.config["CHAT_MAX_INPUT_CHARS"]
     if len(question) > max_chars:
-        return jsonify({
+        return _finish_response({
             "error": f"Запрос слишком длинный. Максимум {max_chars} символов."
-        }), 400
+        }, session_id), 400
 
     try:
-        answer, service = AiAssistantService().answer_for_service(
-            question,
-            service_id,
+        answer, service = AiAssistantService().answer_for_service(question, service_id)
+        category_id = requested_category or detect_service_category(service)
+        category_name = CATEGORY_NAMES.get(category_id, CATEGORY_NAMES["other"])
+
+        history_id = chat_history.add(
+            session_id=session_id,
+            category_id=category_id,
+            category_name=category_name,
+            service_id=service.id,
+            service_name=service.name,
+            user_message=question,
+            ai_response=answer,
+            matched_services=[{"id": service.id, "name": service.name}],
         )
-        return jsonify({
+        logger.info("CHAT SAVED id=%s session=%s category=%s service=%s", history_id, session_id, category_name, service.id)
+
+        return _finish_response({
             "answer": answer,
             "service": service.to_summary_dict(),
             "source": "postgresql",
-        })
+            "session_id": session_id,
+            "category": {"id": category_id, "name": category_name},
+            "history_id": history_id,
+        }, session_id)
     except LookupError:
-        return jsonify({"error": "Услуга не найдена"}), 404
+        return _finish_response({"error": "Услуга не найдена"}, session_id), 404
     except Exception:
         logger.exception("Ошибка при объяснении конкретной услуги")
-        return jsonify({
+        return _finish_response({
             "error": "Не удалось получить ответ ИИ. Проверьте настройки сервиса и повторите запрос."
-        }), 500
+        }, session_id), 500
 
 
 @api_bp.post("/chat")
 def chat():
     payload = request.get_json(silent=True) or {}
     question = (payload.get("message") or "").strip()
+    requested_category = (payload.get("category") or "").strip()
+    session_id = _session_id()
 
     if not question:
-        return jsonify({"error": "Пустой запрос"}), 400
+        return _finish_response({"error": "Пустой запрос"}, session_id), 400
 
     max_chars = current_app.config["CHAT_MAX_INPUT_CHARS"]
     if len(question) > max_chars:
-        return jsonify({"error": f"Запрос слишком длинный. Максимум {max_chars} символов."}), 400
+        return _finish_response({
+            "error": f"Запрос слишком длинный. Максимум {max_chars} символов."
+        }, session_id), 400
 
     try:
         answer, matches = AiAssistantService().answer(question)
-        return jsonify({
+        matched = [{"id": item.id, "name": item.name} for item in matches]
+
+        if requested_category:
+            category_id = requested_category
+        elif matches:
+            category_id = detect_service_category(matches[0])
+        else:
+            category_id = "other"
+
+        category_name = CATEGORY_NAMES.get(category_id, CATEGORY_NAMES["other"])
+
+        history_id = chat_history.add(
+            session_id=session_id,
+            category_id=category_id,
+            category_name=category_name,
+            service_id=matches[0].id if matches else None,
+            service_name=matches[0].name if matches else None,
+            user_message=question,
+            ai_response=answer,
+            matched_services=matched,
+        )
+        logger.info("CHAT SAVED id=%s session=%s category=%s service=%s", history_id, session_id, category_name, matches[0].id if matches else None)
+
+        return _finish_response({
             "answer": answer,
-            "matched": [{"id": item.id, "name": item.name} for item in matches],
+            "matched": matched,
             "source": "postgresql",
-        })
+            "session_id": session_id,
+            "category": {"id": category_id, "name": category_name},
+            "history_id": history_id,
+        }, session_id)
     except Exception:
         logger.exception("Ошибка при обработке запроса ИИ")
-        return jsonify({"error": "Не удалось получить ответ ИИ. Проверьте настройки сервиса и повторите запрос."}), 500
+        return _finish_response({
+            "error": "Не удалось получить ответ ИИ. Проверьте настройки сервиса и повторите запрос."
+        }, session_id), 500
