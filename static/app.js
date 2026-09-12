@@ -573,9 +573,7 @@ document.querySelectorAll(".nav-item").forEach((item) => {
 loadChatHistory();
 loadServices();
 
-// ==========================================
-// ЛОГИКА ДЛЯ КНОПКИ "ПОСЛЕДНИЕ ОБНОВЛЕНИЯ"
-// ==========================================
+
 const btnRecentUpdates = document.getElementById("btn-recent-updates");
 const recentUpdatesList = document.getElementById("recent-updates-list");
 
@@ -620,7 +618,6 @@ if (btnRecentUpdates && recentUpdatesList) {
                 `;
                 
                 div.addEventListener("click", () => {
-                    // Используем функцию askAiForService, так как askAiAboutService в этой версии нет
                     askAiForService(item.id, item.title);
                 });
                 
@@ -629,6 +626,52 @@ if (btnRecentUpdates && recentUpdatesList) {
         } catch (error) {
             console.error("Ошибка загрузки обновлений:", error);
             recentUpdatesList.innerHTML = '<div class="load-error">Ошибка загрузки обновлений.</div>';
+        }
+    });
+
+}
+
+const btnSyncData = document.getElementById("btn-sync-data");
+const jsonUpload = document.getElementById("json-upload");
+
+if (btnSyncData && jsonUpload) {
+    btnSyncData.addEventListener("click", () => {
+        jsonUpload.click(); 
+    });
+
+    jsonUpload.addEventListener("change", async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const originalText = btnSyncData.innerHTML;
+        btnSyncData.innerHTML = "⏳ Обработка...";
+        btnSyncData.disabled = true;
+
+        try {
+            const response = await fetch("/api/upload_sync", {
+                method: "POST",
+                body: formData
+            });
+            const data = await response.json();
+
+            if (response.ok) {
+                btnSyncData.innerHTML ="Обновлено!";
+                loadServices(serviceSearch.value.trim()); 
+            } else {
+                throw new Error(data.error || "Ошибка сервера");
+            }
+        } catch (error) {
+            console.error("Ошибка:", error);
+            btnSyncData.innerHTML = "Ошибка";
+        } finally {
+            setTimeout(() => {
+                btnSyncData.innerHTML = originalText;
+                btnSyncData.disabled = false;
+                jsonUpload.value = ""; 
+            }, 3000);
         }
     });
 }

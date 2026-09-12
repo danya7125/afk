@@ -1,6 +1,6 @@
 import logging
 import uuid
-
+from sync import sync_data_elt
 import os
 import psycopg
 
@@ -241,3 +241,25 @@ def recent_updates():
     except Exception as e:
         logger.exception("Ошибка при получении последних обновлений")
         return jsonify({"error": str(e)}), 500
+
+@api_bp.post("/upload_sync")
+def upload_sync():
+    try:
+        if 'file' not in request.files:
+            return jsonify({"error": "Файл не передан"}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({"error": "Файл пуст"}), 400
+
+        temp_path = "/tmp/uploaded_data.json"
+        file.save(temp_path)
+        
+        sync_data_elt(temp_path)
+        
+        os.remove(temp_path)
+        
+        return jsonify({"status": "success", "message": "Данные успешно синхронизированы!"})
+    
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 500
