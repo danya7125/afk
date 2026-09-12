@@ -8,12 +8,12 @@
     --md-black: #2C2A29;
     --md-white: #FFFFFF;
 
-    --bg: #241914;
-    --sidebar: #2a1d17;
-    --surface: #33241c;
-    --surface-2: #3c2b21;
-    --surface-hover: #47342a;
-    --border: #4c362a;
+    --bg: #000000;
+    --sidebar: #000000;
+    --surface: #0D0D0D;
+    --surface-2: #161616;
+    --surface-hover: #202020;
+    --border: #2A2A2A;
     --border-soft: rgba(195, 147, 103, .18);
     --text: #f8f2ea;
     --muted: #b39d88;
@@ -311,7 +311,7 @@ body.light-theme .brand-logo-light {
     gap: 20px;
     padding: 0 28px;
     border-bottom: 1px solid var(--border);
-    background: rgba(36, 25, 20, .92);
+    background: rgba(0, 0, 0, .92);
     position: sticky;
     top: 0;
     z-index: 10;
