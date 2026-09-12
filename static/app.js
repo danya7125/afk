@@ -34,6 +34,7 @@ let searchTimer = null;
 const UI_STORAGE_KEY = "mfc-ui-state-v2";
 const SESSION_STORAGE_KEY = "mfc-session-id-v1";
 const MAX_HISTORY_ITEMS = 100;
+let pendingClarification = null;
 
 function getSessionId() {
     let value = localStorage.getItem(SESSION_STORAGE_KEY);
@@ -69,6 +70,7 @@ async function loadChatHistory() {
         }
 
         clearRenderedChat();
+        pendingClarification = null;
         (Array.isArray(data.items) ? data.items : []).forEach((item) => {
             if (!item) return;
             if (item.user_message) {
@@ -158,6 +160,7 @@ clearChat.addEventListener("click", async () => {
             throw new Error(data.error || "Не удалось очистить историю");
         }
         clearRenderedChat();
+        pendingClarification = null;
     } catch (error) {
         console.error("Ошибка очистки истории:", error);
     }
@@ -345,7 +348,7 @@ globalSearch.addEventListener("keydown", (event) => {
     }
 });
 
-function addMessage(type, text, sources = []) {
+function addMessage(type, text, sources = [], options = []) {
     const item = document.createElement("div");
     item.className = "message " + type;
 
@@ -358,6 +361,25 @@ function addMessage(type, text, sources = []) {
     bubble.textContent = text;
 
     item.append(label, bubble);
+
+    if (type === "assistant" && Array.isArray(options) && options.length) {
+        const optionsBox = document.createElement("div");
+        optionsBox.className = "clarification-options";
+
+        options.slice(0, 4).forEach((option) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "clarification-option";
+            button.textContent = option;
+            button.addEventListener("click", () => {
+                aiInput.value = option;
+                sendMessage();
+            });
+            optionsBox.appendChild(button);
+        });
+
+        item.appendChild(optionsBox);
+    }
 
     if (type === "assistant" && Array.isArray(sources) && sources.length) {
         const sourceBox = document.createElement("div");
@@ -445,6 +467,10 @@ async function sendMessage() {
     const text = aiInput.value.trim();
     if (!text || sendAi.disabled) return;
 
+    const effectiveText = pendingClarification
+        ? `Предыдущий запрос: ${pendingClarification.originalQuestion}\nУточняющий вопрос: ${pendingClarification.question}\nОтвет пользователя: ${text}`
+        : text;
+
     addMessage("user", text);
     aiInput.value = "";
     sendAi.disabled = true;
@@ -455,14 +481,31 @@ async function sendMessage() {
             method: "POST",
             headers: apiHeaders({"Content-Type": "application/json"}),
             body: JSON.stringify({
-                message: text,
+                message: effectiveText,
                 category: selectedCategory,
             }),
         });
         const data = await response.json();
         removeTyping();
         if (!response.ok) throw new Error(data.error || "Ошибка сервера");
-        addMessage("assistant", data.answer || "Ответ не получен.", data.matched || []);
+        const responseType = data.type || "answer";
+        const assistantText = responseType === "clarification"
+            ? (data.question || data.answer || "Уточните, пожалуйста, запрос.")
+            : (data.answer || "Ответ не получен.");
+
+        addMessage(
+            "assistant",
+            assistantText,
+            data.matched || [],
+            responseType === "clarification" ? (data.options || []) : []
+        );
+
+        pendingClarification = responseType === "clarification"
+            ? {
+                originalQuestion: pendingClarification?.originalQuestion || text,
+                question: data.question || assistantText,
+            }
+            : null;
     } catch (error) {
         console.error("Ошибка ИИ:", error);
         removeTyping();

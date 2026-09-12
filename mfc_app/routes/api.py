@@ -30,6 +30,24 @@ def _finish_response(payload: dict, session_id: str):
     return response
 
 
+def _conversation_context(session_id: str, limit: int = 6) -> str:
+    try:
+        rows = chat_history.list_for_session(session_id, limit=limit)
+    except Exception:
+        logger.exception("Не удалось получить контекст истории чата")
+        return ""
+
+    parts = []
+    for row in rows[-limit:]:
+        user_message = str(row.get("user_message") or "").strip()
+        ai_response = str(row.get("ai_response") or "").strip()
+        if user_message:
+            parts.append(f"Пользователь: {user_message}")
+        if ai_response:
+            parts.append(f"Ассистент: {ai_response}")
+    return "\n".join(parts)
+
+
 @api_bp.get("/categories")
 def categories():
     return jsonify(CATEGORIES)
@@ -150,8 +168,12 @@ def chat():
         }, session_id), 400
 
     try:
-        answer, matches = AiAssistantService().answer(question)
+        decision, matches = AiAssistantService().answer(
+            question,
+            conversation_context=_conversation_context(session_id),
+        )
         matched = [{"id": item.id, "name": item.name} for item in matches]
+        answer = decision.get("answer") or decision.get("question") or ""
 
         if requested_category:
             category_id = requested_category
@@ -176,6 +198,9 @@ def chat():
 
         return _finish_response({
             "answer": answer,
+            "type": decision.get("type", "answer"),
+            "question": decision.get("question", ""),
+            "options": decision.get("options", []),
             "matched": matched,
             "source": "postgresql",
             "session_id": session_id,
